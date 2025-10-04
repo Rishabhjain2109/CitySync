@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import './App.css';
+import Header from './components/Header';
 
 const theme = createTheme({
   palette: {
@@ -26,6 +27,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Header/>
       <Router>
         <div className="App">
           <Routes>
