@@ -10,6 +10,7 @@ dist/
 .env
 config.env
 *.env
+remove.env
 
 # Logs
 npm-debug.log*
@@ -70,7 +71,6 @@ dist
 
 # Gatsby files
 .cache/
-public
 
 # Storybook build outputs
 .out
