@@ -1,0 +1,22 @@
+{
+  "name": "citysync",
+  "version": "1.0.0",
+  "description": "Municipal Corporation Management System - Full Stack Application",
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install && cd ../client && npm install",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "seed": "cd backend && npm run seed",
+    "seed-departments": "cd backend && npm run seed-departments",
+    "init-db": "cd backend && npm run init-db",
+    "test-setup": "cd backend && npm run test-setup"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["municipal", "management", "mern", "react", "nodejs"],
+  "author": "CitySync Team",
+  "license": "MIT"
+}
