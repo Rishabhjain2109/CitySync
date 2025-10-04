@@ -1,6 +1,8 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import CitizenDashboard from './CitizenDashboard';
+import HeadDashboard from './HeadDashboard';
+import WorkerDashboard from './WorkerDashboard';
 
 const Dashboard = () => {
 
@@ -22,9 +24,11 @@ const Dashboard = () => {
     
   return (
     <div>
-        {user.userType === 'citizen'?(<CitizenDashboard/>):(<div>Unauthorized or invalid user type</div>)}
+        {user.userType === 'citizen' && <CitizenDashboard/>}
+        {user.userType === 'departmentHead' && <HeadDashboard/>}
+        {user.userType === 'worker' && <WorkerDashboard/>}
     </div>
   )
 }
 
-export default Dashboard
+export default Dashboard;

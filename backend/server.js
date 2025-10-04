@@ -18,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/departments', require('./routes/departments'));
+app.use('/api/complaints', require('./routes/complaints'));
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
