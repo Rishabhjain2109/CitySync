@@ -221,3 +221,8 @@ cd backend && npm start
 ## License
 
 This project is licensed under the MIT License.
+
+
+## Collaborators
+1. Rishabh Jain
+2. Samar Burnwal
