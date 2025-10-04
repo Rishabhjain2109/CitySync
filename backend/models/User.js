@@ -9,9 +9,13 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: function() {
+      return this.userType === 'citizen';
+    },
     unique: true,
-    lowercase: true
+    sparse: true,
+    lowercase: true,
+    default: undefined
   },
   password: {
     type: String,
@@ -21,7 +25,8 @@ const userSchema = new mongoose.Schema({
   enrollmentNumber: {
     type: String,
     unique: true,
-    sparse: true // Allows null values but ensures uniqueness when present
+    sparse: true,
+    default: undefined
   },
   department: {
     type: String,

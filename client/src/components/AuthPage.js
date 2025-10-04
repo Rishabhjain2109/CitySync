@@ -10,7 +10,11 @@ import {
   CircularProgress,
   Tabs,
   Tab,
-  Grid
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import axios from 'axios';
 
@@ -34,25 +38,21 @@ const AuthPage = () => {
   const [headForm, setHeadForm] = useState({
     enrollmentNumber: '',
     password: '',
-    confirmPassword: '',
-    name: '',
-    phone: '',
-    address: ''
+    confirmPassword: ''
   });
 
   // Worker form state
   const [workerForm, setWorkerForm] = useState({
     enrollmentNumber: '',
     password: '',
-    confirmPassword: '',
-    name: '',
-    phone: '',
-    address: ''
+    confirmPassword: ''
   });
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
+    userType: 'citizen',
     email: '',
+    enrollmentNumber: '',
     password: ''
   });
 
@@ -83,12 +83,6 @@ const AuthPage = () => {
     });
   };
 
-  const handleLoginChange = (e) => {
-    setLoginForm({
-      ...loginForm,
-      [e.target.name]: e.target.value
-    });
-  };
 
   const handleCitizenSubmit = async (e) => {
     e.preventDefault();
@@ -137,10 +131,7 @@ const AuthPage = () => {
     try {
       const response = await axios.post('http://localhost:5000/api/auth/signup/head', {
         enrollmentNumber: headForm.enrollmentNumber,
-        password: headForm.password,
-        name: headForm.name,
-        phone: headForm.phone,
-        address: headForm.address
+        password: headForm.password
       });
 
       setMessage('Department Head registered successfully!');
@@ -169,10 +160,7 @@ const AuthPage = () => {
     try {
       const response = await axios.post('http://localhost:5000/api/auth/signup/worker', {
         enrollmentNumber: workerForm.enrollmentNumber,
-        password: workerForm.password,
-        name: workerForm.name,
-        phone: workerForm.phone,
-        address: workerForm.address
+        password: workerForm.password
       });
 
       setMessage('Worker registered successfully!');
@@ -193,10 +181,19 @@ const AuthPage = () => {
     setMessage('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email: loginForm.email,
+      const loginData = {
+        userType: loginForm.userType,
         password: loginForm.password
-      });
+      };
+
+      // Add appropriate identifier based on user type
+      if (loginForm.userType === 'citizen') {
+        loginData.email = loginForm.email;
+      } else {
+        loginData.enrollmentNumber = loginForm.enrollmentNumber;
+      }
+
+      const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
 
       setMessage('Login successful!');
       localStorage.setItem('token', response.data.token);
@@ -233,16 +230,47 @@ const AuthPage = () => {
           <form onSubmit={handleLoginSubmit}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={loginForm.email}
-                  onChange={handleLoginChange}
-                  required
-                />
+                <FormControl fullWidth required>
+                  <InputLabel>Login As</InputLabel>
+                  <Select
+                    value={loginForm.userType}
+                    label="Login As"
+                    onChange={(e) => setLoginForm({...loginForm, userType: e.target.value})}
+                  >
+                    <MenuItem value="citizen">Citizen</MenuItem>
+                    <MenuItem value="worker">Worker</MenuItem>
+                    <MenuItem value="departmentHead">Department Head</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
+              
+              {loginForm.userType === 'citizen' ? (
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                    required
+                    helperText="Enter your registered email address"
+                  />
+                </Grid>
+              ) : (
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Enrollment Number"
+                    name="enrollmentNumber"
+                    value={loginForm.enrollmentNumber}
+                    onChange={(e) => setLoginForm({...loginForm, enrollmentNumber: e.target.value})}
+                    required
+                    helperText={`Enter your ${loginForm.userType === 'worker' ? 'worker' : 'department head'} enrollment number`}
+                  />
+                </Grid>
+              )}
+              
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -250,7 +278,7 @@ const AuthPage = () => {
                   name="password"
                   type="password"
                   value={loginForm.password}
-                  onChange={handleLoginChange}
+                  onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
                   required
                 />
               </Grid>
@@ -371,38 +399,6 @@ const AuthPage = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Full Name"
-                  name="name"
-                  value={headForm.name}
-                  onChange={handleHeadChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  value={headForm.phone}
-                  onChange={handleHeadChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Address"
-                  name="address"
-                  multiline
-                  rows={2}
-                  value={headForm.address}
-                  onChange={handleHeadChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
                   label="Password"
                   name="password"
                   type="password"
@@ -450,38 +446,6 @@ const AuthPage = () => {
                   onChange={handleWorkerChange}
                   required
                   helperText="Enter your worker enrollment number"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  name="name"
-                  value={workerForm.name}
-                  onChange={handleWorkerChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  value={workerForm.phone}
-                  onChange={handleWorkerChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Address"
-                  name="address"
-                  multiline
-                  rows={2}
-                  value={workerForm.address}
-                  onChange={handleWorkerChange}
-                  required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>

@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Department = require('../models/Department');
+const EnrollmentCredential = require('../models/EnrollmentCredential');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -56,15 +57,22 @@ router.post('/signup/citizen', async (req, res) => {
 // Department Head Signup
 router.post('/signup/head', async (req, res) => {
   try {
-    const { enrollmentNumber, password, name, phone, address } = req.body;
+    const { enrollmentNumber, password } = req.body;
 
-    // Check if enrollment number exists in any department
-    const department = await Department.findOne({
-      headEnrollmentNumbers: enrollmentNumber
+    // Check if enrollment credential exists and is valid
+    const credential = await EnrollmentCredential.findOne({
+      enrollmentNumber,
+      userType: 'departmentHead',
+      isUsed: false
     });
 
-    if (!department) {
+    if (!credential) {
       return res.status(400).json({ message: 'Invalid enrollment number' });
+    }
+
+    // Verify password matches the pre-seeded password
+    if (password !== credential.password) {
+      return res.status(400).json({ message: 'Invalid password for this enrollment number' });
     }
 
     // Check if user already exists with this enrollment number
@@ -77,14 +85,19 @@ router.post('/signup/head', async (req, res) => {
     const departmentHead = new User({
       userType: 'departmentHead',
       enrollmentNumber,
-      password,
-      department: department.name,
-      name,
-      phone,
-      address
+      password: credential.password,
+      department: credential.department,
+      name: credential.name,
+      phone: credential.phone,
+      address: credential.address
     });
 
     await departmentHead.save();
+
+    // Mark credential as used
+    credential.isUsed = true;
+    credential.usedBy = departmentHead._id;
+    await credential.save();
 
     // Generate token
     const token = generateToken(departmentHead._id);
@@ -95,9 +108,9 @@ router.post('/signup/head', async (req, res) => {
       user: {
         id: departmentHead._id,
         name: departmentHead.name,
-        email: departmentHead.email,
         userType: departmentHead.userType,
-        department: departmentHead.department
+        department: departmentHead.department,
+        enrollmentNumber: departmentHead.enrollmentNumber
       }
     });
   } catch (error) {
@@ -109,15 +122,22 @@ router.post('/signup/head', async (req, res) => {
 // Worker Signup
 router.post('/signup/worker', async (req, res) => {
   try {
-    const { enrollmentNumber, password, name, phone, address } = req.body;
+    const { enrollmentNumber, password } = req.body;
 
-    // Check if enrollment number exists in any department
-    const department = await Department.findOne({
-      workerEnrollmentNumbers: enrollmentNumber
+    // Check if enrollment credential exists and is valid
+    const credential = await EnrollmentCredential.findOne({
+      enrollmentNumber,
+      userType: 'worker',
+      isUsed: false
     });
 
-    if (!department) {
+    if (!credential) {
       return res.status(400).json({ message: 'Invalid enrollment number' });
+    }
+
+    // Verify password matches the pre-seeded password
+    if (password !== credential.password) {
+      return res.status(400).json({ message: 'Invalid password for this enrollment number' });
     }
 
     // Check if user already exists with this enrollment number
@@ -129,7 +149,7 @@ router.post('/signup/worker', async (req, res) => {
     // Find the department head for this department
     const departmentHead = await User.findOne({
       userType: 'departmentHead',
-      department: department.name
+      department: credential.department
     });
 
     if (!departmentHead) {
@@ -140,15 +160,20 @@ router.post('/signup/worker', async (req, res) => {
     const worker = new User({
       userType: 'worker',
       enrollmentNumber,
-      password,
-      department: department.name,
+      password: credential.password,
+      department: credential.department,
       assignedHead: departmentHead._id,
-      name,
-      phone,
-      address
+      name: credential.name,
+      phone: credential.phone,
+      address: credential.address
     });
 
     await worker.save();
+
+    // Mark credential as used
+    credential.isUsed = true;
+    credential.usedBy = worker._id;
+    await credential.save();
 
     // Generate token
     const token = generateToken(worker._id);
@@ -159,10 +184,10 @@ router.post('/signup/worker', async (req, res) => {
       user: {
         id: worker._id,
         name: worker.name,
-        email: worker.email,
         userType: worker.userType,
         department: worker.department,
-        assignedHead: worker.assignedHead
+        assignedHead: worker.assignedHead,
+        enrollmentNumber: worker.enrollmentNumber
       }
     });
   } catch (error) {
@@ -174,10 +199,28 @@ router.post('/signup/worker', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { userType, email, enrollmentNumber, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    let user;
+
+    if (userType === 'citizen') {
+      // Citizen login with email and password
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required for citizen login' });
+      }
+
+      user = await User.findOne({ email, userType: 'citizen' });
+    } else if (userType === 'worker' || userType === 'departmentHead') {
+      // Worker/Department Head login with enrollment number and password
+      if (!enrollmentNumber || !password) {
+        return res.status(400).json({ message: 'Enrollment number and password are required for worker/department head login' });
+      }
+
+      user = await User.findOne({ enrollmentNumber, userType });
+    } else {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
+
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -197,15 +240,44 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email,
         userType: user.userType,
+        email: user.email,
         department: user.department,
-        assignedHead: user.assignedHead
+        assignedHead: user.assignedHead,
+        enrollmentNumber: user.enrollmentNumber
       }
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });
+  }
+});
+
+// Change Password
+router.put('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Find user
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    // Check current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ message: 'Server error during password change' });
   }
 });
 
