@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
 import "./css/Header.css";
+import { Button } from "@mui/material";
+
+
+const logout = ()=>{
+  localStorage.setItem("token","");
+  window.location.href = "/";
+}
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,6 +53,8 @@ const Header = () => {
           <div className="search-container">
             <input type="text" placeholder="Search..." className="search-input" />
             <FiSearch className="search-icon" />
+            <Button onClick={()=>{logout()}}>Logout</Button>
+
           </div>
 
           <div className="menu-button">
@@ -69,6 +78,8 @@ const Header = () => {
           <div className="mobile-search">
             <input type="text" placeholder="Search..." className="search-input" />
             <FiSearch className="search-icon" />
+            <Button onClick={()=>{logout()}}>Logout</Button>
+            
           </div>
         </div>
       </header>

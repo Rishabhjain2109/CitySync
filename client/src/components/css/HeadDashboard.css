@@ -1,0 +1,61 @@
+/* Layout container */
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f7f7f7;
+  font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+}
+
+.sidebar-btn {
+  background-color: #1abc9c !important;
+  color: #fff !important;
+  padding: 10px 15px !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.main-content h1 {
+  margin-bottom: 20px;
+}
+
+/* Complaint card */
+.complaint-card {
+  width: 60%;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.complaint-card p {
+  margin: 5px 0;
+}

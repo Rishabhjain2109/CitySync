@@ -8,21 +8,27 @@ const complaintSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    required: true
+    // required: true
   },
   description: {
     type: String,
-    required: true
+    // required: true
   },
   department: {
     type: String,
     enum: ['sewage', 'garbage', 'road', 'water', 'electricity'],
+    // required: true
+  },
+  location: {
+    type: String,
     required: true
   },
-  location:{
-    type:String,
-    required:true
-  },
+  images: [
+    {
+      type: String, // Cloudinary URL
+      required: false
+    }
+  ],
   status: {
     type: String,
     enum: ['pending', 'assigned', 'in-progress', 'resolved'],
@@ -43,7 +49,8 @@ const complaintSchema = new mongoose.Schema({
   }
 });
 
-complaintSchema.pre('save', function(next) {
+// Automatically update the updatedAt field before saving
+complaintSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./ComplaintForm.css";
+import axios from "axios";
 
 const ComplaintForm = () => {
   const [formData, setFormData] = useState({
@@ -35,12 +36,30 @@ const ComplaintForm = () => {
     setImagePreviews(updatedPreviews);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Data:", formData);
-    alert("Form submitted! Check console for data.");
-    // Backend submission logic here
+
+    const data = new FormData();
+    formData.images.forEach((img) => data.append("images", img));
+    data.append("description", formData.description);
+    data.append("address", formData.address);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post("http://localhost:5000/api/complaints/userSubmit", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`
+        }
+      });
+      alert("Complaint submitted successfully!");
+      console.log(res.data);
+    } catch (error) {
+      console.error("Error submitting complaint:", error);
+      alert("Error submitting complaint.");
+    }
   };
+
 
   return (
     <div className="form-container">
