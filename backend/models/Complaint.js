@@ -8,7 +8,7 @@ const complaintSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    // required: true
+    required: true
   },
   description: {
     type: String,
@@ -34,11 +34,13 @@ const complaintSchema = new mongoose.Schema({
     enum: ['pending', 'assigned', 'in-progress', 'resolved'],
     default: 'pending'
   },
-  assignedWorker: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
-  },
+  assignedWorkers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now

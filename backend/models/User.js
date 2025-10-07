@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
     sparse: true,
     default: undefined
   },
+  status: {
+    type: String,
+    enum: ['active', 'busy'],
+    default: 'active'
+  },
   department: {
     type: String,
     enum: ['sewage', 'garbage', 'road', 'water', 'electricity'],
@@ -57,6 +62,11 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  allocatedComplaint: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Complaint',
+    default: null
   },
   createdAt: {
     type: Date,

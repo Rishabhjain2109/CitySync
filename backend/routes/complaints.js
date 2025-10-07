@@ -86,6 +86,28 @@ router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
   }
 });
 
+router.get('/headComplaints', auth, async (req, res) => {
+  try {
+    const head = req.user;
+    console.log(head);
+    const complaints = await Complaint.find({ department: head.department, status: 'pending' });
+    res.json({ complaints });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/update-complaint', auth, async (req, res) => {
+  try {
+    const { complaintId, status, assignedWorkers } = req.body;
+    const complaint = await Complaint.findByIdAndUpdate(complaintId, { status, assignedWorkers }, { new: true });
+    res.json({ message: 'Complaint updated successfully', complaint });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 module.exports = router;

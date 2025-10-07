@@ -16,13 +16,9 @@ const HeadDashboard = () => {
   const token = localStorage.getItem("token")
 
   const handleViewComplaints = async () => {
-    // Mock data for testing
-    setComplaints([
-      { _id: 1, type: "Water Leakage", location: "Hostel A - Room 203", status: "Pending" },
-      { _id: 2, type: "Broken Light", location: "Library Hall", status: "Resolved" },
-      { _id: 3, type: "Internet Issue", location: "CSE Department", status: "In Progress" }
-    ]);
+    
     setShowComplaints(true);
+    
     setShowWorkers(false);
   };
   
@@ -44,20 +40,25 @@ const HeadDashboard = () => {
   };
 
   useEffect(() => {
-    const workers = [
-      { _id: "w001", name: "Amit Kumar", available: true },
-      { _id: "w002", name: "Priya Sharma", available: false },
-      { _id: "w003", name: "Ravi Verma", available: true },
-      { _id: "w004", name: "Neha Singh", available: true },
-      { _id: "w005", name: "Sanjay Patel", available: false },
-      { _id: "w006", name: "Deepak Yadav", available: true },
-      { _id: "w007", name: "Pooja Rani", available: true },
-      { _id: "w008", name: "Arjun Mehta", available: false },
-      { _id: "w009", name: "Kiran Gupta", available: true },
-      { _id: "w010", name: "Rahul Tiwari", available: true }
-    ];
-    
-    setWorkers(workers);
+    const fetchComplaints = async () => {
+      const complaintsResponse = await axios.get("http://localhost:5000/api/complaints/headComplaints", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setComplaints(complaintsResponse.data.complaints);
+      console.log(complaintsResponse.data.complaints);
+    };
+
+    const fetchWorkers = async () => {
+      const workersResponse = await axios.get("http://localhost:5000/api/workers/get-workers", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWorkers(workersResponse.data.workers);
+      console.log(workersResponse.data.workers);
+      setShowWorkers(true);
+    };
+
+    fetchWorkers();
+    fetchComplaints();
   }, []);
 
   return (

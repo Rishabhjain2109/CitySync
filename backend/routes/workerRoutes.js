@@ -30,4 +30,25 @@ router.get('/my-head', auth, async (req, res) => {
   }
 });
 
+router.get('/get-workers', auth, async (req, res) => {
+  try {
+    const workers = await User.find({ userType: 'worker', department: req.user.department });
+    res.json({ workers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/update-worker', auth, async (req, res) => {
+  try {
+    const { workerId, status, allocatedComplaint } = req.body;
+    const worker = await User.findByIdAndUpdate(workerId, { status, allocatedComplaint }, { new: true });
+    res.json({ message: 'Worker updated successfully', worker });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
