@@ -20,6 +20,11 @@ const enrollmentCredentialSchema = new mongoose.Schema({
     enum: ['sewage', 'garbage', 'road', 'water', 'electricity'],
     required: true
   },
+  status: {
+    type: String,
+    enum: ['active', 'busy'],
+    default: 'active'
+  },
   name: {
     type: String,
     required: true

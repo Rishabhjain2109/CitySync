@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import axios from "axios";
 import Button from "./BasicComponents/Button/Button";
 
@@ -6,6 +6,7 @@ import Button from "./BasicComponents/Button/Button";
 const WorkerDashboard = () => {
   const [head, setHead] = useState(null);
   const [showHead, setShowHead] = useState(false);
+  const [complaints, setComplaints] = useState([]);
 
   const token = localStorage.getItem("token");
 
@@ -25,7 +26,22 @@ const WorkerDashboard = () => {
       }
     }
   };
-
+  useEffect(() => {
+    const fetchMyComplaints = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/workers/my-complaints', {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setComplaints(res.data.complaints);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to fetch your assigned complaints.");
+      }
+    };
+  
+    fetchMyComplaints();
+  }, []);
+  
   return (
     <div className="dashboard-container">
       <h1>Worker Dashboard</h1>
@@ -41,6 +57,16 @@ const WorkerDashboard = () => {
           <p><strong>Address:</strong> {head.address}</p>
         </div>
       )}
+      {complaints.map((c) => (
+  <div key={c._id} className="complaint-card">
+    <p><strong>ID:</strong> {c._id}</p>
+    <p><strong>Address:</strong> {c.location}</p>
+    <p><strong>Type:</strong> {c.department}</p>
+    <p><strong>Description:</strong> {c.description}</p>
+    <p><strong>Status:</strong> {c.status}</p>
+  </div>
+))}
+
     </div>
   );
 };
