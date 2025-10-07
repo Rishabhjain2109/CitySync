@@ -6,10 +6,7 @@ const complaintSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  type: {
-    type: String,
-    required: true
-  },
+  
   description: {
     type: String,
     // required: true
@@ -26,7 +23,7 @@ const complaintSchema = new mongoose.Schema({
   images: [
     {
       type: String, // Cloudinary URL
-      required: true
+      // required: true
     }
   ],
   status: {

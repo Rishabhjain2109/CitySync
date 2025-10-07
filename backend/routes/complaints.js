@@ -35,6 +35,7 @@ router.get('/department', auth, async (req, res) => {
 router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
   try {
     const { description, address, type } = req.body;
+    console.log(req.body);
     const user = req.user;
     const files = Array.isArray(req.files) ? req.files : [];
 
@@ -64,6 +65,7 @@ router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
 
     const newComplaint = new Complaint({
       citizen: user._id,
+      type, // ensure schema-required 'type' is set
       department: type,
       description,
       location: address,

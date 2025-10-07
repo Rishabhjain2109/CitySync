@@ -43,7 +43,25 @@ router.get('/get-workers', auth, async (req, res) => {
 router.put('/update-worker', auth, async (req, res) => {
   try {
     const { workerId, status, allocatedComplaint } = req.body;
-    const worker = await User.findByIdAndUpdate(workerId, { status, allocatedComplaint }, { new: true });
+
+    // Support both single ID and array of IDs
+    if (Array.isArray(workerId)) {
+      const result = await User.updateMany(
+        { _id: { $in: workerId } },
+        { $set: { status, allocatedComplaint } }
+      );
+      return res.json({
+        message: 'Workers updated successfully',
+        matchedCount: result.matchedCount ?? result.n,
+        modifiedCount: result.modifiedCount ?? result.nModified
+      });
+    }
+
+    const worker = await User.findByIdAndUpdate(
+      workerId,
+      { status, allocatedComplaint },
+      { new: true }
+    );
     res.json({ message: 'Worker updated successfully', worker });
   } catch (err) {
     console.error(err);

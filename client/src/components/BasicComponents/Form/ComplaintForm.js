@@ -46,6 +46,8 @@ const ComplaintForm = () => {
     data.append("address", formData.address);
     data.append("type", formData.type);
 
+    console.log(data);
+    
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post("http://localhost:5000/api/complaints/userSubmit", data, {
