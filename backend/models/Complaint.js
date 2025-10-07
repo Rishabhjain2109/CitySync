@@ -26,7 +26,7 @@ const complaintSchema = new mongoose.Schema({
   images: [
     {
       type: String, // Cloudinary URL
-      required: false
+      required: true
     }
   ],
   status: {

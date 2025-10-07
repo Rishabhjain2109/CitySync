@@ -7,6 +7,10 @@ const HeadDashboard = () => {
   const [showComplaints, setShowComplaints] = useState(false);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [workers,setWorkers]=useState([]);
+  const [showWorkers,setShowWorkers]=useState(false);
+
+  const token = localStorage.getItem("token")
 
   const handleViewComplaints = async () => {
     // Mock data for testing
@@ -16,6 +20,24 @@ const HeadDashboard = () => {
       { _id: 3, type: "Internet Issue", location: "CSE Department", status: "In Progress" }
     ]);
     setShowComplaints(true);
+    setShowWorkers(false);
+  };
+  
+  const fetchWorkers = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://localhost:5000/api/heads/workers", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWorkers(res.data.workers);
+      setShowWorkers(true);
+      setShowComplaints(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch workers");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,6 +46,10 @@ const HeadDashboard = () => {
       <div className="sidebar">
         <Button onClick={handleViewComplaints} className="sidebar-btn">
           View Complaints
+        </Button>
+
+        <Button onClick={fetchWorkers} className="sidebar-btn">
+          View Workers
         </Button>
       </div>
 
@@ -43,6 +69,23 @@ const HeadDashboard = () => {
               <p><strong>Status:</strong> {c.status}</p>
             </div>
           ))}
+
+           {/* Workers Section */}
+        {showWorkers && !loading && (
+          <div className="workers-section">
+            <h2>Your Workers ({workers.length})</h2>
+            {workers.length === 0 ? (
+              <p>No workers found under you.</p>
+            ) : (
+              workers.map((worker) => (
+                <div key={worker._id} className="worker-card">
+                  <p><strong>Name:</strong> {worker.name}</p>
+                  <p><strong>Status:</strong> {worker.status}</p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

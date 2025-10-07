@@ -48,7 +48,7 @@ router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
       description,
       address,
       images: uploadedImages,
-      status: 'Pending',
+      status: 'pending',
       createdAt: new Date()
     });
 
