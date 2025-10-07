@@ -5,7 +5,9 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedWorkers, setSelectedWorkers] = useState([]);
 
-  const handleOpenModal = () => setShowModal(true);
+  const handleOpenModal = () =>{ 
+    setShowModal(true);    
+  }
   const handleCloseModal = () => {
     setSelectedWorkers([]);
     setShowModal(false);

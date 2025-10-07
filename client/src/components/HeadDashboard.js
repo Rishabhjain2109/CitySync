@@ -8,7 +8,7 @@ const HeadDashboard = () => {
   const [showComplaints, setShowComplaints] = useState(false);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [workers, setWorkers] = useState([]);
+  // const [workers, setWorkers] = useState([]);
   
   const [workers,setWorkers]=useState([]);
   const [showWorkers,setShowWorkers]=useState(false);
@@ -23,6 +23,24 @@ const HeadDashboard = () => {
       { _id: 3, type: "Internet Issue", location: "CSE Department", status: "In Progress" }
     ]);
     setShowComplaints(true);
+    setShowWorkers(false);
+  };
+  
+  const fetchWorkers = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://localhost:5000/api/heads/workers", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWorkers(res.data.workers);
+      setShowWorkers(true);
+      setShowComplaints(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch workers");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
