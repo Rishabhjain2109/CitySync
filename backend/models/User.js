@@ -59,10 +59,6 @@ const userSchema = new mongoose.Schema({
       return this.userType === 'worker';
     }
   },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
   allocatedComplaint: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Complaint',

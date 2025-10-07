@@ -35,6 +35,8 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
     const updated = workers.map((w) =>
       selectedWorkers.includes(w._id) ? { ...w, status: 'busy' } : w
     );
+    console.log(selectedWorkers);
+    
     const response = await axios.put(
       'http://localhost:5000/api/workers/update-worker',
       {
