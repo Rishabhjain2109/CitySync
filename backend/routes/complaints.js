@@ -5,7 +5,13 @@ const auth = require('../middleware/auth');
 const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({
+  dest: 'uploads/',
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB per file
+    files: 5 // max 5 files
+  }
+});
 
 
 router.get('/department', auth, async (req, res) => {
@@ -28,42 +34,58 @@ router.get('/department', auth, async (req, res) => {
 // for user submitting complaints
 router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
   try {
-    const { description, address } = req.body;
-    const user = req.user; // from auth middleware
+    const { description, address, type } = req.body;
+    const user = req.user;
+    const files = Array.isArray(req.files) ? req.files : [];
 
-    // Upload each image to Cloudinary
-    const uploadedImages = [];
-    for (const file of req.files) {
-      const result = await cloudinary.uploader.upload(file.path, {
-        folder: 'complaints',
-      });
-      uploadedImages.push(result.secure_url);
-      fs.unlinkSync(file.path); // Delete local temp file
+    if (!description || !address || !type) {
+      return res.status(400).json({ message: 'description, address and type are required' });
     }
 
-    // Create new complaint document
+    // Upload all images to Cloudinary in parallel (fail-fast with lower timeout)
+    let uploadedImages = [];
+    if (files.length > 0) {
+      const uploadPromises = files.map(file => {
+        return cloudinary.uploader
+          .upload(file.path, { folder: 'complaints', timeout: 10000, resource_type: 'image' })
+          .then(result => {
+            try { fs.unlinkSync(file.path); } catch (_) {}
+            return result.secure_url;
+          })
+          .catch(err => {
+            try { fs.unlinkSync(file.path); } catch (_) {}
+            throw err;
+          });
+      });
+
+      uploadedImages = await Promise.all(uploadPromises);
+    }
+
+
     const newComplaint = new Complaint({
-      user: user._id,
-      department: user.department,
+      citizen: user._id,
+      department: type,
       description,
-      address,
+      location: address,
       images: uploadedImages,
-      status: 'Pending',
-      createdAt: new Date()
+      status: 'pending',
+      createdAt: new Date(),
     });
+    
 
     await newComplaint.save();
 
     res.status(201).json({
       message: 'Complaint submitted successfully!',
-      complaint: newComplaint
+      complaint: newComplaint,
     });
-
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error submitting complaint', error: error.message });
+    console.error('Error in /userSubmit:', error);
+    const isTimeout = /timed out|Timeout/i.test(error?.message || '');
+    res.status(isTimeout ? 504 : 500).json({ message: isTimeout ? 'Upload to Cloudinary timed out' : 'Error submitting complaint', error: error.message });
   }
 });
+
 
 
 module.exports = router;

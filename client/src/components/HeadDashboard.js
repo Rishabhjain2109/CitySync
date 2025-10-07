@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Button from './BasicComponents/Button/Button';
 import './css/HeadDashboard.css';
+import HeadComplaintCard from './BasicComponents/HeadComplaintCard/HeadComplaintCard';
 
 const HeadDashboard = () => {
   const [showComplaints, setShowComplaints] = useState(false);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [workers, setWorkers] = useState([]);
+  
 
   const handleViewComplaints = async () => {
     // Mock data for testing
@@ -17,6 +20,23 @@ const HeadDashboard = () => {
     ]);
     setShowComplaints(true);
   };
+
+  useEffect(() => {
+    const workers = [
+      { _id: "w001", name: "Amit Kumar", available: true },
+      { _id: "w002", name: "Priya Sharma", available: false },
+      { _id: "w003", name: "Ravi Verma", available: true },
+      { _id: "w004", name: "Neha Singh", available: true },
+      { _id: "w005", name: "Sanjay Patel", available: false },
+      { _id: "w006", name: "Deepak Yadav", available: true },
+      { _id: "w007", name: "Pooja Rani", available: true },
+      { _id: "w008", name: "Arjun Mehta", available: false },
+      { _id: "w009", name: "Kiran Gupta", available: true },
+      { _id: "w010", name: "Rahul Tiwari", available: true }
+    ];
+    
+    setWorkers(workers);
+  }, []);
 
   return (
     <div className="dashboard-container">
@@ -37,11 +57,7 @@ const HeadDashboard = () => {
 
         {showComplaints &&
           complaints.map((c) => (
-            <div key={c._id} className="complaint-card">
-              <p><strong>Type:</strong> {c.type}</p>
-              <p><strong>Location:</strong> {c.location}</p>
-              <p><strong>Status:</strong> {c.status}</p>
-            </div>
+            <HeadComplaintCard complaint={c} workers={workers} setWorkers={setWorkers} />
           ))}
       </div>
     </div>

@@ -17,7 +17,7 @@ const complaintSchema = new mongoose.Schema({
   department: {
     type: String,
     enum: ['sewage', 'garbage', 'road', 'water', 'electricity'],
-    // required: true
+    required: true
   },
   location: {
     type: String,
@@ -26,7 +26,7 @@ const complaintSchema = new mongoose.Schema({
   images: [
     {
       type: String, // Cloudinary URL
-      required: false
+      required: true
     }
   ],
   status: {

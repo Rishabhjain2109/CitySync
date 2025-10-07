@@ -4,6 +4,7 @@ import axios from "axios";
 
 const ComplaintForm = () => {
   const [formData, setFormData] = useState({
+    type: "",
     images: [],
     description: "",
     address: ""
@@ -11,7 +12,7 @@ const ComplaintForm = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
 
   const handleChange = (e) => {
-    const { name, files, value } = e.target;
+    const { name, files, value, type } = e.target;
 
     if (name === "images") {
       const selectedFiles = Array.from(files);
@@ -43,6 +44,7 @@ const ComplaintForm = () => {
     formData.images.forEach((img) => data.append("images", img));
     data.append("description", formData.description);
     data.append("address", formData.address);
+    data.append("type", formData.type);
 
     try {
       const token = localStorage.getItem("token");
@@ -65,6 +67,25 @@ const ComplaintForm = () => {
     <div className="form-container">
       <h2 className="form-title">Submit Complaint</h2>
       <form className="complaint-form" onSubmit={handleSubmit}>
+        
+        {/* Complaint Type Dropdown */}
+        <div className="form-group">
+          <label htmlFor="type">Select Problem Type</label>
+          <select
+            id="type"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+          >
+            <option value="">-- Select --</option>
+            <option value="garbage">Garbage</option>
+            <option value="sewage">Sewage</option>
+            <option value="electricity">Electricity</option>
+            <option value="road">Road</option>
+            <option value="water">Water</option>
+          </select>
+        </div>
+  
         {/* Image Input */}
         <div className="form-group">
           <label htmlFor="images">Upload Images</label>
@@ -77,7 +98,7 @@ const ComplaintForm = () => {
             onChange={handleChange}
           />
         </div>
-
+  
         {/* Image Previews with Remove Button */}
         {imagePreviews.length > 0 && (
           <div className="image-preview-container">
@@ -99,7 +120,7 @@ const ComplaintForm = () => {
             ))}
           </div>
         )}
-
+  
         {/* Description */}
         <div className="form-group">
           <label htmlFor="description">Description</label>
@@ -112,7 +133,7 @@ const ComplaintForm = () => {
             onChange={handleChange}
           ></textarea>
         </div>
-
+  
         {/* Address */}
         <div className="form-group">
           <label htmlFor="address">Address</label>
@@ -125,13 +146,14 @@ const ComplaintForm = () => {
             onChange={handleChange}
           />
         </div>
-
+  
         <button type="submit" className="submit-btn">
           Submit
         </button>
       </form>
     </div>
   );
+  
 };
 
 export default ComplaintForm;
