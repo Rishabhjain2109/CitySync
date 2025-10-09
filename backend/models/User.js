@@ -64,6 +64,13 @@ const userSchema = new mongoose.Schema({
     ref: 'Complaint',
     default: null
   },
+  assignedComplaint: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Complaint',
+      default: null
+    }   
+  ],
   createdAt: {
     type: Date,
     default: Date.now

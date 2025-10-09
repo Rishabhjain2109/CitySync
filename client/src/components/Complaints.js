@@ -1,36 +1,27 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ComplaintCard from './BasicComponents/CompaintCard/ComplaintCard';
+import axios from 'axios';
 
-
-const complaints = [
-  {
-    id: 101,
-    description: "Water leakage in bathroom",
-    address: "123 Main Street, City",
-    date: "2025-10-04",
-    status: "Pending"
-  },
-  {
-    id: 102,
-    description: "Street light not working",
-    address: "45 Park Avenue, City",
-    date: "2025-10-03",
-    status: "In Progress"
-  },
-  {
-    id: 103,
-    description: "Garbage not collected",
-    address: "78 Oak Street, City",
-    date: "2025-09-30",
-    status: "Resolved"
-  }
-];
 
 const Complaints = () => {
+
+  const [complaints, setComplaints] = useState([]);
+
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/users/assigned-complaints', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setComplaints(res.data.complaints || []);
+    }
+    fetchComplaints();
+  }, []);
+
   return (
     <div style={{ padding: "20px" }}>
       {complaints.map((c) => (
-        <ComplaintCard key={c.id} complaint={c} />
+        <ComplaintCard key={c._id} complaint={c} />
       ))}
     </div>
   )

@@ -3,17 +3,17 @@ import { FiCheck } from "react-icons/fi";
 import "./ComplaintCard.css";
 
 const ComplaintCard = ({ complaint }) => {
-  const { id, description, address, date, status } = complaint;
+  const { _id, description, location, date, status } = complaint;
 
-  const steps = ["Pending", "In Progress", "Resolved"];
+  const steps = ["pending", "assigned", "resolved"];
   const currentStep = steps.indexOf(status);
 
   return (
     <div className="complaint-card">
-      <h3 className="card-id">Complaint #{id}</h3>
+      <h3 className="card-id">Complaint #{_id}</h3>
       <p className="card-description">{description}</p>
-      <p className="card-address"><strong>Address:</strong> {address}</p>
-      <p className="card-date"><strong>Submitted:</strong> {date}</p>
+      <p className="card-address"><strong>Address:</strong> {location}</p>
+      {/* <p className="card-date"><strong>Submitted:</strong> {date}</p> */}
 
       {/* Amazon-style tracker */}
       <div className="amazon-tracker">

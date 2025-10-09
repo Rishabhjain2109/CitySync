@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Complaint = require('../models/Complaint');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
@@ -74,7 +75,8 @@ router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
       createdAt: new Date()
     });
     
-
+    user.assignedComplaint.push(newComplaint._id);
+    await user.save();
     await newComplaint.save();
 
     res.status(201).json({
@@ -92,7 +94,7 @@ router.get('/headComplaints', auth, async (req, res) => {
   try {
     const head = req.user;
     console.log(head);
-    const complaints = await Complaint.find({ department: head.department, status: 'pending' });
+    const complaints = await Complaint.find({ department: head.department });
     res.json({ complaints });
   } catch (err) {
     console.error(err);
@@ -111,5 +113,37 @@ router.put('/update-complaint', auth, async (req, res) => {
   }
 });
 
+// Get complaints allocated to the logged-in worker
+router.get('/allocated-complaint', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    // Find all complaints where this user is assigned
+    const complaints = await Complaint.find({ assignedWorkers: { $in: [userId] } });
+    
+    res.json({ complaint: complaints });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/allocated-workers', auth, async (req, res) => {
+  try {
+    const { workerIds } = req.query;
+    
+    if (!workerIds) {
+      return res.status(400).json({ message: 'workerIds parameter is required' });
+    }
+
+    // Parse workerIds if it's a string (could be comma-separated)
+    const workerIdsArray = Array.isArray(workerIds) ? workerIds : workerIds.split(',');
+    
+    const allocatedWorkers = await User.find({ _id: { $in: workerIdsArray } });
+    res.json({ allocatedWorkers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 module.exports = router;

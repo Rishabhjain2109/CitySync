@@ -2,38 +2,72 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Button from './BasicComponents/Button/Button';
 import './css/HeadDashboard.css';
+import ComplaintSearchFilter from "./ComplaintSearchFilter";
 import HeadComplaintCard from './BasicComponents/HeadComplaintCard/HeadComplaintCard';
+import WorkerCard from './BasicComponents/WorkerCard/WorkerCard';
+import AssignedComplaintCard from './BasicComponents/CompaintCard/AssignedComplaintCard'; // 👈 import
 
 const HeadDashboard = () => {
   const [showComplaints, setShowComplaints] = useState(false);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
-  // const [workers, setWorkers] = useState([]);
-  
-  const [workers,setWorkers]=useState([]);
-  const [showWorkers,setShowWorkers]=useState(false);
+  const [workers, setWorkers] = useState([]);
+  const [showWorkers, setShowWorkers] = useState(false);
+  const [complaintFilter, setComplaintFilter] = useState("pending");
 
-  const token = localStorage.getItem("token")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterArea, setFilterArea] = useState("");
+  const [filterUrgency, setFilterUrgency] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
-  const handleViewComplaints = async () => {
-    
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setFilterType("");
+    setFilterArea("");
+    setFilterUrgency("");
+    setFilterDate("");
+  };
+
+
+  const token = localStorage.getItem("token");
+
+  const handleViewComplaints = () => {
     setShowComplaints(true);
-    
     setShowWorkers(false);
   };
+
   
-  const fetchWorkers = async () => {
+
+  const fetchAllocatedWorkers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/heads/workers", {
+      
+      // Get all unique worker IDs from complaints that have assigned workers
+      const allWorkerIds = complaints
+        .filter(complaint => complaint.assignedWorkers && complaint.assignedWorkers.length > 0)
+        .flatMap(complaint => complaint.assignedWorkers)
+        .filter((id, index, arr) => arr.indexOf(id) === index); // Remove duplicates
+      
+      if (allWorkerIds.length === 0) {
+        setWorkers([]);
+        setShowWorkers(true);
+        setShowComplaints(false);
+        return;
+      }
+
+      const res = await axios.get("http://localhost:5000/api/complaints/allocated-workers", {
         headers: { Authorization: `Bearer ${token}` },
+        params: { workerIds: allWorkerIds.join(',') }
       });
-      setWorkers(res.data.workers);
+      
+      console.log(res.data);
+      setWorkers(res.data.allocatedWorkers);
       setShowWorkers(true);
       setShowComplaints(false);
     } catch (err) {
       console.error(err);
-      alert("Failed to fetch workers");
+      alert("Failed to fetch allocated workers");
     } finally {
       setLoading(false);
     }
@@ -41,25 +75,47 @@ const HeadDashboard = () => {
 
   useEffect(() => {
     const fetchComplaints = async () => {
-      const complaintsResponse = await axios.get("http://localhost:5000/api/complaints/headComplaints", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setComplaints(complaintsResponse.data.complaints);
-      console.log(complaintsResponse.data.complaints);
+      try {
+        const res = await axios.get(
+          "http://localhost:5000/api/complaints/headComplaints",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setComplaints(res.data.complaints);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     const fetchWorkers = async () => {
-      const workersResponse = await axios.get("http://localhost:5000/api/workers/get-workers", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setWorkers(workersResponse.data.workers);
-      console.log(workersResponse.data.workers);
-      setShowWorkers(true);
+      try {
+        const res = await axios.get(
+          "http://localhost:5000/api/workers/get-workers",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setWorkers(res.data.workers);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchWorkers();
     fetchComplaints();
-  }, []);
+  }, [token]);
+  
+  const filteredComplaints = complaints
+    .filter((c) => c.status === complaintFilter)
+    .filter((c) =>
+      [c.type, c.area, c.description]
+        .some((field) => field?.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+    .filter((c) => (filterType ? c.type === filterType : true))
+    .filter((c) => (filterArea ? c.area === filterArea : true))
+    .filter((c) => (filterUrgency ? c.urgency === filterUrgency : true))
+    .filter((c) =>
+      filterDate
+        ? new Date(c.createdAt).toDateString() === new Date(filterDate).toDateString()
+        : true
+    );
 
   return (
     <div className="dashboard-container">
@@ -68,37 +124,90 @@ const HeadDashboard = () => {
         <Button onClick={handleViewComplaints} className="sidebar-btn">
           View Complaints
         </Button>
-
-        <Button onClick={fetchWorkers} className="sidebar-btn">
-          View Workers
+        <Button onClick={fetchAllocatedWorkers} className="sidebar-btn">
+          View Allocated Workers
         </Button>
       </div>
 
-      {/* Main content */}
+      {/* Main Content */}
       <div className="main-content">
         <h1>Department Head Dashboard</h1>
 
-        {loading && <p>Loading complaints...</p>}
+        {loading && <p>Loading...</p>}
 
-        {showComplaints && complaints.length === 0 && <p>No complaints found.</p>}
+        {/* Complaints Section */}
+        {showComplaints && (
+          <div className="complaints-section">
+            <div className="complaint-filter">
+              <Button
+                onClick={() => setComplaintFilter("pending")}
+                className={complaintFilter === "pending" ? "active" : ""}
+              >
+                Pending
+              </Button>
+              <Button
+                onClick={() => setComplaintFilter("assigned")}
+                className={complaintFilter === "assigned" ? "active" : ""}
+              >
+                Assigned
+              </Button>
+              <Button
+                onClick={() => setComplaintFilter("resolved")}
+                className={complaintFilter === "resolved" ? "active" : ""}
+              >
+                Resolved
+              </Button>
+            </div>
 
-        {showComplaints &&
-          complaints.map((c) => (
-            <HeadComplaintCard complaint={c} workers={workers} setWorkers={setWorkers} />
-          ))}
+            <h2>
+              {complaintFilter.charAt(0).toUpperCase() +
+                complaintFilter.slice(1)}{" "}
+              Complaints ({filteredComplaints.length})
+            </h2>
 
-           {/* Workers Section */}
+            <ComplaintSearchFilter
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              filterType={filterType}
+              setFilterType={setFilterType}
+              filterArea={filterArea}
+              setFilterArea={setFilterArea}
+              filterUrgency={filterUrgency}
+              setFilterUrgency={setFilterUrgency}
+              filterDate={filterDate}
+              setFilterDate={setFilterDate}
+              onClearFilters={handleClearFilters}
+            />
+
+
+            {filteredComplaints.length === 0 ? (
+              <p>No {complaintFilter} complaints found.</p>
+            ) :  (
+              filteredComplaints.map((c) =>
+                complaintFilter === "assigned" ? (
+                  <AssignedComplaintCard key={c._id} complaint={c} />
+                ) : (
+                  <HeadComplaintCard
+                    key={c._id}
+                    complaint={c}
+                    workers={workers}
+                    setWorkers={setWorkers}
+                  />
+                )
+              )
+            )}
+          </div>
+        )}
+
+        {/* Workers Section */}
         {showWorkers && !loading && (
           <div className="workers-section">
-            <h2>Your Workers ({workers.length})</h2>
+            <h2>Allocated Workers ({workers.length})</h2>
             {workers.length === 0 ? (
-              <p>No workers found under you.</p>
+              <p>No allocated workers found.</p>
             ) : (
               workers.map((worker) => (
-                <div key={worker._id} className="worker-card">
-                  <p><strong>Name:</strong> {worker.name}</p>
-                  <p><strong>Status:</strong> {worker.status}</p>
-                </div>
+                <WorkerCard key={worker._id} worker={worker} />
               ))
             )}
           </div>

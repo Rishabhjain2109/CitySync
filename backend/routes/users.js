@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
+const Complaint = require('../models/Complaint');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -68,6 +69,36 @@ router.get('/assigned-head', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Get assigned head error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/allocated-complaint', auth, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user.allocatedComplaint) {
+      return res.json({ complaint: null });
+    }
+    const complaint = await Complaint.findById(user.allocatedComplaint);
+    return res.json({ complaint });
+  } catch (error) {
+    console.error('Get allocated complaint error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all complaints whose IDs are in user's assignedComplaint array
+router.get('/assigned-complaints', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('assignedComplaint');
+    const ids = Array.isArray(user.assignedComplaint) ? user.assignedComplaint : [];
+    if (ids.length === 0) {
+      return res.json({ complaints: [] });
+    }
+    const complaints = await Complaint.find({ _id: { $in: ids } });
+    return res.json({ complaints });
+  } catch (error) {
+    console.error('Get assigned complaints error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

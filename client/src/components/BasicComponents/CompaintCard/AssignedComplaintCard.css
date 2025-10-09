@@ -1,0 +1,51 @@
+.assigned-complaint-card {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  padding: 16px;
+  margin: 12px 0;
+  transition: all 0.2s ease-in-out;
+}
+
+.assigned-complaint-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.complaint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle-btn {
+  display: inline-block;  /* ✅ make sure it’s not hidden */
+  margin-top: 10px;
+  padding: 8px 14px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 10;
+  position: relative;
+}
+
+.toggle-btn:hover {
+  background-color: #0056b3;
+}
+
+
+.workers-list {
+  margin-top: 12px;
+  padding-left: 10px;
+  border-left: 3px solid #007bff;
+}
+
+.worker-item {
+  background-color: #eef3ff;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
