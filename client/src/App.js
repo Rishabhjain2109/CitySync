@@ -4,6 +4,9 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+
 import './App.css';
 import Header from './components/Header';
 
@@ -40,6 +43,8 @@ function App() {
               path="/dashboard" 
               element={isAuthenticated() ? <Dashboard /> : <Navigate to="/" />} 
             />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={ localStorage.getItem('adminToken') ? <AdminDashboard /> : <Navigate to="/admin/login" />} />
           </Routes>
         </div>
       </Router>
