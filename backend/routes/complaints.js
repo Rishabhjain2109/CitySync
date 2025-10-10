@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const multer = require('multer');
+const { sendEmail, sendSMS } = require('../config/notifications');
 const upload = multer({
   dest: 'uploads/',
   limits: {
@@ -106,13 +107,45 @@ router.get('/headComplaints', auth, async (req, res) => {
 router.put('/update-complaint', auth, async (req, res) => {
   try {
     const { complaintId, status, assignedWorkers } = req.body;
-    const complaint = await Complaint.findByIdAndUpdate(complaintId, { status, assignedWorkers }, { new: true });
+
+    // Find the complaint first
+    const complaint = await Complaint.findById(complaintId).populate('citizen assignedWorkers');
+
+    if (!complaint) {
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+
+    const oldStatus = complaint.status; // save old status
+    complaint.status = status;
+    complaint.assignedWorkers = assignedWorkers || complaint.assignedWorkers;
+
+    await complaint.save();
+
+    // 🔔 Send notifications if status changed
+    if (oldStatus !== status) {
+      const citizenEmail = complaint.citizen.email;
+      const citizenPhone = complaint.citizen.phone;
+
+      // Example messages
+      const message = `Your complaint "${complaint.description}" status changed from ${oldStatus} to ${status}.`;
+
+      // Send email
+      sendEmail(citizenEmail, 'Complaint Status Update', message);
+
+      // Send SMS
+      sendSMS(citizenPhone, message);
+
+      // Optional: push notification
+      // sendPush(complaint.citizen.deviceToken, message);
+    }
+
     res.json({ message: 'Complaint updated successfully', complaint });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // Get complaints allocated to the logged-in worker
 router.get('/allocated-complaint', auth, async (req, res) => {
