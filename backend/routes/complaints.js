@@ -119,6 +119,35 @@ router.put('/update-complaint', auth, async (req, res) => {
 
       console.log("Workers updated:", updateResult.modifiedCount);
     }
+    const complaint1 = await Complaint.findById(complaintId).populate('citizen assignedWorkers');
+
+    if (!complaint1) {
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+
+    const oldStatus = complaint1.status; // save old status
+    complaint1.status = status;
+    complaint1.assignedWorkers = assignedWorkers || complaint1.assignedWorkers;
+
+    await complaint1.save();
+
+    // 🔔 Send notifications if status changed
+    if (oldStatus !== status) {
+      const citizenEmail = complaint1.citizen.email;
+      const citizenPhone = complaint1.citizen.phone;
+
+      // Example messages
+      const message = `Your complaint "${complaint1.description}" status changed from ${oldStatus} to ${status}.`;
+
+      // Send email
+      sendEmail(citizenEmail, 'Complaint Status Update', message);
+
+      // Send SMS
+      sendSMS(citizenPhone, message);
+
+      // Optional: push notification
+      // sendPush(complaint.citizen.deviceToken, message);
+    }
     res.json({ message: 'Complaint updated successfully', workerIDs });
   } catch (err) {
     console.error(err);
