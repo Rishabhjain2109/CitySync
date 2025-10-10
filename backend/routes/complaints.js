@@ -104,9 +104,20 @@ router.get('/headComplaints', auth, async (req, res) => {
 
 router.put('/update-complaint', auth, async (req, res) => {
   try {
-    const { complaintId, status, assignedWorkers } = req.body;
-    const complaint = await Complaint.findByIdAndUpdate(complaintId, { status, assignedWorkers }, { new: true });
-    res.json({ message: 'Complaint updated successfully', complaint });
+    const { complaintId, status, workerIDs } = req.body;
+    const complaint = await Complaint.findByIdAndUpdate(complaintId, { status }, { new: true });
+    
+    console.log(workerIDs);
+    
+    if (status === "resolved" && Array.isArray(workerIDs) && workerIDs.length > 0) {
+      const updateResult = await User.updateMany(
+        { _id: { $in: workerIDs } },
+        { $set: { status: 'active' } }
+      );
+
+      console.log("Workers updated:", updateResult.modifiedCount);
+    }
+    res.json({ message: 'Complaint updated successfully', workerIDs });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

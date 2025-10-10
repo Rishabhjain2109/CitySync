@@ -85,9 +85,9 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
           </span>
         </p>
 
-        <button className="allot-btn" onClick={handleOpenModal}>
+        {complaint.status === 'pending' && <button className="allot-btn" onClick={handleOpenModal}>
           Allot Workers
-        </button>
+        </button>}
       </div>
 
       {/* Floating Modal */}

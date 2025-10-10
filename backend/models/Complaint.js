@@ -38,6 +38,12 @@ const complaintSchema = new mongoose.Schema({
       default: null
     }
   ],
+  submittedImages: [
+    {
+      type: String, // Cloudinary URL
+      // required: true
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now
