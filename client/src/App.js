@@ -6,9 +6,10 @@ import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
-
+import ComplaintHeatmap from './components/ComplaintHeatmap';
 import './App.css';
 import Header from './components/Header';
+import 'leaflet/dist/leaflet.css';
 
 const theme = createTheme({
   palette: {
@@ -45,6 +46,8 @@ function App() {
             />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={ localStorage.getItem('adminToken') ? <AdminDashboard /> : <Navigate to="/admin/login" />} />
+            <Route path="/admin/heatmap" element={<ComplaintHeatmap />} />
+
           </Routes>
         </div>
       </Router>

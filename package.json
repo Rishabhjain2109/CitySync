@@ -16,7 +16,18 @@
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
-  "keywords": ["municipal", "management", "mern", "react", "nodejs"],
+  "keywords": [
+    "municipal",
+    "management",
+    "mern",
+    "react",
+    "nodejs"
+  ],
   "author": "CitySync Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet.heat": "^0.2.0",
+    "react-leaflet": "^5.0.0"
+  }
 }

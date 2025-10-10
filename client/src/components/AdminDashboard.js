@@ -1,11 +1,14 @@
 // src/components/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
@@ -75,6 +78,7 @@ const AdminDashboard = () => {
   if (loading) return <div>Loading complaints...</div>;
 
   return (
+    
     <div>
       <h2>Admin Dashboard - All Complaints</h2>
 
@@ -90,6 +94,8 @@ const AdminDashboard = () => {
   <button onClick={handleMonthlyCSV} style={{ marginLeft: '10px' }}>
     Download Monthly CSV
   </button>
+  <button onClick={() => navigate('/admin/heatmap')}>View Heatmap</button>
+
 </div>
 
 
