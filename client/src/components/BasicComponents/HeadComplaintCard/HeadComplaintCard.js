@@ -5,13 +5,17 @@ import axios from "axios";
 const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedWorkers, setSelectedWorkers] = useState([]);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
 
-  const handleOpenModal = () =>{ 
+  // Calculate SLA breach (48 hours = 172800000 ms)
+  const isSLABreached =
+    Date.now() - new Date(complaint.createdAt).getTime() > 48 * 60 * 60 * 1000;
+
+  const handleOpenModal = () => {
     console.log(selectedWorkers);
-    
-    setShowModal(true);    
-  }
+    setShowModal(true);
+  };
+
   const handleCloseModal = () => {
     setSelectedWorkers([]);
     setShowModal(false);
@@ -29,49 +33,64 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
   // Allocate selected workers (change availability to false)
   const handleAllocateWorkers = async () => {
     if (!token) {
-      alert('You are not authenticated. Please log in again.');
+      alert("You are not authenticated. Please log in again.");
       return;
     }
+
     const updated = workers.map((w) =>
-      selectedWorkers.includes(w._id) ? { ...w, status: 'busy' } : w
+      selectedWorkers.includes(w._id) ? { ...w, status: "busy" } : w
     );
-    console.log(selectedWorkers);
-    
-    const response = await axios.put(
-      'http://localhost:5000/api/workers/update-worker',
-      {
-        workerId: selectedWorkers,
-        status: 'busy',
-        allocatedComplaint: complaint._id
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
-    const complaintResponse = await axios.put(
-      'http://localhost:5000/api/complaints/update-complaint',
-      {
-        complaintId: complaint._id,
-        status: 'assigned',
-        assignedWorkers: selectedWorkers
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
-    setWorkers(updated);
-    alert(`Allocated ${selectedWorkers.length} worker(s) to the complaint.`);
-    handleCloseModal();
+
+    try {
+      await axios.put(
+        "http://localhost:5000/api/workers/update-worker",
+        {
+          workerId: selectedWorkers,
+          status: "busy",
+          allocatedComplaint: complaint._id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      await axios.put(
+        "http://localhost:5000/api/complaints/update-complaint",
+        {
+          complaintId: complaint._id,
+          status: "assigned",
+          assignedWorkers: selectedWorkers,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setWorkers(updated);
+      alert(`Allocated ${selectedWorkers.length} worker(s) to the complaint.`);
+      handleCloseModal();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to allocate workers.");
+    }
   };
 
   // Filter only available workers
-  const availableWorkers = workers.filter((w) => w.status === 'active');
+  const availableWorkers = workers.filter((w) => w.status === "active");
 
   return (
     <>
       {/* Complaint Card */}
-      <div className="complaint-card">
-        
+      <div className={`complaint-card ${isSLABreached ? "sla-breached" : ""}`}>
+        <div className="complaint-header">
+          <h3>{complaint.title || "Complaint"}</h3>
+
+          {/* SLA Breach Badge */}
+          {isSLABreached && (
+            <span className="sla-badge">⚠️ SLA Breached</span>
+          )}
+        </div>
+
         <p>
           <strong>Location:</strong> {complaint.location}
         </p>
@@ -84,10 +103,15 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
             {complaint.status}
           </span>
         </p>
+        <p>
+          <strong>Date:</strong> {complaint.createdAt.split("T")[0]}
+        </p>
 
-        {complaint.status === 'pending' && <button className="allot-btn" onClick={handleOpenModal}>
-          Allot Workers
-        </button>}
+        {complaint.status === "pending" && (
+          <button className="allot-btn" onClick={handleOpenModal}>
+            Allot Workers
+          </button>
+        )}
       </div>
 
       {/* Floating Modal */}

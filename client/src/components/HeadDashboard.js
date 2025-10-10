@@ -6,6 +6,8 @@ import ComplaintSearchFilter from "./ComplaintSearchFilter";
 import HeadComplaintCard from './BasicComponents/HeadComplaintCard/HeadComplaintCard';
 import WorkerCard from './BasicComponents/WorkerCard/WorkerCard';
 import AssignedComplaintCard from './BasicComponents/CompaintCard/AssignedComplaintCard'; // 👈 import
+import { checkSLA, getTimeRemaining, sortComplaintsBySLA } from "../utils/slaUtils";
+
 
 const HeadDashboard = () => {
   const [showComplaints, setShowComplaints] = useState(false);
@@ -102,20 +104,23 @@ const HeadDashboard = () => {
     fetchComplaints();
   }, [token]);
   
-  const filteredComplaints = complaints
-    .filter((c) => c.status === complaintFilter)
-    .filter((c) =>
-      [c.type, c.area, c.description]
-        .some((field) => field?.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-    .filter((c) => (filterType ? c.type === filterType : true))
-    .filter((c) => (filterArea ? c.area === filterArea : true))
-    .filter((c) => (filterUrgency ? c.urgency === filterUrgency : true))
-    .filter((c) =>
-      filterDate
-        ? new Date(c.createdAt).toDateString() === new Date(filterDate).toDateString()
-        : true
-    );
+  const filteredComplaints = sortComplaintsBySLA(
+    complaints
+      .filter((c) => c.status === complaintFilter)
+      .filter((c) =>
+        [c.type, c.area, c.description]
+          .some((field) => field?.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+      .filter((c) => (filterType ? c.type === filterType : true))
+      .filter((c) => (filterArea ? c.area === filterArea : true))
+      .filter((c) => (filterUrgency ? c.urgency === filterUrgency : true))
+      .filter((c) =>
+        filterDate
+          ? new Date(c.createdAt).toDateString() === new Date(filterDate).toDateString()
+          : true
+      )
+  );
+
 
   return (
     <div className="dashboard-container">

@@ -144,3 +144,26 @@
 .close-btn:hover {
   background-color: #b91c1c;
 }
+
+/* Add red badge for SLA breach */
+.sla-badge {
+  background-color: #ff4d4d;
+  color: white;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-left: 10px;
+}
+
+/* Optional: Add a slight border glow for breached cards */
+.sla-breached {
+  border: 2px solid #ff4d4d;
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
+}
+
+.complaint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
