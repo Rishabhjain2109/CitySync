@@ -1,0 +1,120 @@
+.worker-dashboard {
+  padding: 40px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+}
+
+.dashboard-title {
+  font-size: 2rem;
+  color: #222;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.loading-text {
+  text-align: center;
+  font-style: italic;
+}
+
+/* Head Card */
+.head-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 25px 30px;
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+.head-card h2 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.head-details p {
+  margin: 6px 0;
+  font-size: 15px;
+  color: #444;
+}
+
+/* Complaints Grid */
+.complaints-section {
+  margin-top: 40px;
+}
+
+.complaints-section h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.no-complaints {
+  text-align: center;
+  color: #666;
+}
+
+.complaints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+/* Complaint Card */
+/* Center each complaint card */
+.complaint-card-wrapper {
+  display: flex;
+  justify-content: center; /* centers horizontally */
+  margin: 20px 0;          /* space between cards */
+}
+
+/* Make the complaint card larger */
+.complaint-card {
+  width: 110%;              /* wider than before */
+  max-width: 700px;        /* optional max width */
+  padding: 25px 30px;      /* more padding */
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.complaint-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.complaint-card p {
+  margin: 8px 0;
+  font-size: 16px;  /* slightly larger text */
+  color: #333;
+}
+
+
+.status {
+  font-weight: bold;
+  text-transform: capitalize;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.status.pending {
+  background-color: #ffedcc;
+  color: #b36b00;
+}
+
+.status.assigned {
+  background-color: #d0e6ff;
+  color: #004a99;
+}
+
+.status.resolved {
+  background-color: #c8f7c5;
+  color: #217a00;
+}

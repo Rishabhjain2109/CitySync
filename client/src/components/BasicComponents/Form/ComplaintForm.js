@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ComplaintForm.css";
 import axios from "axios";
 
@@ -7,29 +7,77 @@ const ComplaintForm = () => {
     type: "",
     images: [],
     description: "",
-    address: ""
+    address: "",
+    latitude: "",
+    longitude: ""
   });
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [loadingAddress, setLoadingAddress] = useState(false);
 
+  // 🌍 Get location when component mounts
+  useEffect(() => {
+    getLocation();
+  }, []);
+
+  // Get user's current location
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      setLoadingAddress(true);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          setFormData((prev) => ({ ...prev, latitude, longitude }));
+          await getAddressFromCoords(latitude, longitude);
+          setLoadingAddress(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("Please allow location access to auto-fill your address.");
+          setLoadingAddress(false);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
+  };
+
+  // 🧭 Reverse Geocoding using Google Maps API
+  const getAddressFromCoords = async (lat, lng) => {
+    try {
+      const API_KEY = "AIzaSyBkGY96ZhFtZ-1e6RV_ePXkXgVT9bd9IAg"; // 🔒 Replace with your real key
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`
+      );
+
+      if (response.data.results.length > 0) {
+        const address = response.data.results[0].formatted_address;
+        setFormData((prev) => ({ ...prev, address }));
+      } else {
+        console.warn("No address found for these coordinates.");
+      }
+    } catch (error) {
+      console.error("Error in reverse geocoding:", error);
+    }
+  };
+
+  // Handle input changes
   const handleChange = (e) => {
-    const { name, files, value, type } = e.target;
+    const { name, files, value } = e.target;
 
     if (name === "images") {
       const selectedFiles = Array.from(files);
-
-      // Append new images
       const updatedImages = [...formData.images, ...selectedFiles];
       setFormData({ ...formData, images: updatedImages });
 
-      // Update previews
-      const newPreviews = selectedFiles.map((file) => URL.createObjectURL(file));
+      const newPreviews = selectedFiles.map((file) =>
+        URL.createObjectURL(file)
+      );
       setImagePreviews((prev) => [...prev, ...newPreviews]);
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-  // Remove image handler
   const removeImage = (index) => {
     const updatedImages = formData.images.filter((_, i) => i !== index);
     const updatedPreviews = imagePreviews.filter((_, i) => i !== index);
@@ -45,17 +93,21 @@ const ComplaintForm = () => {
     data.append("description", formData.description);
     data.append("address", formData.address);
     data.append("type", formData.type);
+    data.append("latitude", formData.latitude);
+    data.append("longitude", formData.longitude);
 
-    console.log(data);
-    
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/api/complaints/userSubmit", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`
+      const res = await axios.post(
+        "http://localhost:5000/api/complaints/userSubmit",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       alert("Complaint submitted successfully!");
       console.log(res.data);
     } catch (error) {
@@ -64,13 +116,12 @@ const ComplaintForm = () => {
     }
   };
 
-
   return (
     <div className="form-container">
       <h2 className="form-title">Submit Complaint</h2>
+
       <form className="complaint-form" onSubmit={handleSubmit}>
-        
-        {/* Complaint Type Dropdown */}
+        {/* Complaint Type */}
         <div className="form-group">
           <label htmlFor="type">Select Problem Type</label>
           <select
@@ -87,8 +138,8 @@ const ComplaintForm = () => {
             <option value="water">Water</option>
           </select>
         </div>
-  
-        {/* Image Input */}
+
+        {/* Upload Images */}
         <div className="form-group">
           <label htmlFor="images">Upload Images</label>
           <input
@@ -100,8 +151,8 @@ const ComplaintForm = () => {
             onChange={handleChange}
           />
         </div>
-  
-        {/* Image Previews with Remove Button */}
+
+        {/* Image Previews */}
         {imagePreviews.length > 0 && (
           <div className="image-preview-container">
             {imagePreviews.map((src, index) => (
@@ -122,7 +173,7 @@ const ComplaintForm = () => {
             ))}
           </div>
         )}
-  
+
         {/* Description */}
         <div className="form-group">
           <label htmlFor="description">Description</label>
@@ -135,27 +186,31 @@ const ComplaintForm = () => {
             onChange={handleChange}
           ></textarea>
         </div>
-  
-        {/* Address */}
+
+        {/* Address (Auto-filled) */}
         <div className="form-group">
-          <label htmlFor="address">Address</label>
+          <label htmlFor="address">
+            Address{" "}
+            {loadingAddress && (
+              <span style={{ color: "gray" }}>(Fetching address...)</span>
+            )}
+          </label>
           <input
             type="text"
             id="address"
             name="address"
-            placeholder="Enter your address"
+            placeholder="Fetching your location..."
             value={formData.address}
-            onChange={handleChange}
+            readOnly
           />
         </div>
-  
+
         <button type="submit" className="submit-btn">
           Submit
         </button>
       </form>
     </div>
   );
-  
 };
 
 export default ComplaintForm;
