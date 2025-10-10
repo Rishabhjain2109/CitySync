@@ -16,9 +16,10 @@ const complaintSchema = new mongoose.Schema({
     enum: ['sewage', 'garbage', 'road', 'water', 'electricity'],
     required: true
   },
-  location: {
-    type: String,
-    required: true
+  location:String,
+  geo: {
+    lat:Number,
+    lng:Number
   },
   images: [
     {

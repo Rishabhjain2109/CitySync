@@ -35,7 +35,7 @@ router.get('/department', auth, async (req, res) => {
 // for user submitting complaints
 router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
   try {
-    const { description, address, type } = req.body;
+    const { description, address, type, latitude, longitude } = req.body;
     console.log(req.body);
     const user = req.user;
     const files = Array.isArray(req.files) ? req.files : [];
@@ -70,6 +70,7 @@ router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
       department: type,
       description,
       location: address,
+      geo:{lat:latitude,lng:longitude},
       images: uploadedImages,
       status: 'pending',
       createdAt: new Date()
