@@ -48,12 +48,13 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
         headers: { Authorization: `Bearer ${token}` }
       }
     );
+
     const complaintResponse = await axios.put(
       'http://localhost:5000/api/complaints/update-complaint',
       {
         complaintId: complaint._id,
         status: 'assigned',
-        assignedWorkers: selectedWorkers
+        workerIDs: selectedWorkers
       },
       {
         headers: { Authorization: `Bearer ${token}` }

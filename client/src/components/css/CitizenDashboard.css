@@ -86,6 +86,13 @@
   background-color: #15803d;
 }
 
+.btn3 {
+  background-color: #dc2626; /* red */
+}
+.btn3:hover {
+  background-color: #b91c1c;
+}
+
 /* Main content area */
 .main-content {
   flex: 1;

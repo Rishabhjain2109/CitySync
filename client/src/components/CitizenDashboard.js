@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./css/CitizenDashboard.css";
 import ComplaintForm from "./BasicComponents/Form/ComplaintForm";
 import Complaints from "./Complaints";
+import ComplaintStats from "./ComplaintStats";
 
 const CitizenDashboard = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -21,13 +22,15 @@ const CitizenDashboard = () => {
         <div className="sidebar-buttons">
           <button onClick={()=> setPage('submit')} className="sidebar-btn btn1">Submit Complaints</button>
           <button onClick={()=> setPage('status')} className="sidebar-btn btn2">Complaints Status</button>
+          <button onClick={()=> setPage('stats')} className="sidebar-btn btn3">Statistics</button>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="main-content">
-        {/* <h2>Submit Your Complaints</h2> */}
-        {page === 'submit' ? <ComplaintForm/>:<Complaints/>}
+        {page === 'submit' && <ComplaintForm/>}
+        {page === 'status' && <Complaints/>}
+        {page === 'stats' && <ComplaintStats/>}
       </div>
     </div>
   );
