@@ -49,3 +49,56 @@
   padding: 8px 10px;
   margin-bottom: 8px;
 }
+
+.buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.toggle-btn,
+.resolve-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background-color: #0056b3;
+}
+
+.resolve-btn {
+  background-color: #28a745;
+}
+
+.resolve-btn:hover {
+  background-color: #1e7e34;
+}
+
+.resolve-btn:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+.submitted-images {
+  margin-top: 1rem;
+}
+
+.images-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.submitted-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+}

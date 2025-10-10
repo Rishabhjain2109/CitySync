@@ -106,40 +106,20 @@ router.get('/headComplaints', auth, async (req, res) => {
 
 router.put('/update-complaint', auth, async (req, res) => {
   try {
-    const { complaintId, status, assignedWorkers } = req.body;
+    const { complaintId, status, workerIDs } = req.body;
+    const complaint = await Complaint.findByIdAndUpdate(complaintId, { status }, { new: true });
+    
+    console.log(workerIDs);
+    
+    if (status === "resolved" && Array.isArray(workerIDs) && workerIDs.length > 0) {
+      const updateResult = await User.updateMany(
+        { _id: { $in: workerIDs } },
+        { $set: { status: 'active' } }
+      );
 
-    // Find the complaint first
-    const complaint = await Complaint.findById(complaintId).populate('citizen assignedWorkers');
-
-    if (!complaint) {
-      return res.status(404).json({ message: 'Complaint not found' });
+      console.log("Workers updated:", updateResult.modifiedCount);
     }
-
-    const oldStatus = complaint.status; // save old status
-    complaint.status = status;
-    complaint.assignedWorkers = assignedWorkers || complaint.assignedWorkers;
-
-    await complaint.save();
-
-    // 🔔 Send notifications if status changed
-    if (oldStatus !== status) {
-      const citizenEmail = complaint.citizen.email;
-      const citizenPhone = complaint.citizen.phone;
-
-      // Example messages
-      const message = `Your complaint "${complaint.description}" status changed from ${oldStatus} to ${status}.`;
-
-      // Send email
-      sendEmail(citizenEmail, 'Complaint Status Update', message);
-
-      // Send SMS
-      sendSMS(citizenPhone, message);
-
-      // Optional: push notification
-      // sendPush(complaint.citizen.deviceToken, message);
-    }
-
-    res.json({ message: 'Complaint updated successfully', complaint });
+    res.json({ message: 'Complaint updated successfully', workerIDs });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

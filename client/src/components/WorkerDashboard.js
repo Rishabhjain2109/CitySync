@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Button from "./BasicComponents/Button/Button";
-import WorkerCard from "./BasicComponents/WorkerCard/WorkerCard";
 import "./css/WorkerDashboard.css";
 
 const WorkerDashboard = () => {
@@ -9,6 +8,8 @@ const WorkerDashboard = () => {
   const [showHead, setShowHead] = useState(false);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [images, setImages] = useState({}); // { complaintId: [FileList] }
 
   const token = localStorage.getItem("token");
 
@@ -46,6 +47,60 @@ const WorkerDashboard = () => {
 
     fetchMyComplaints();
   }, [token]);
+
+  // Handle file selection for a specific complaint
+  const handleImageChange = (complaintId, files) => {
+    const fileArray = Array.from(files);
+    setImages((prev) => ({
+      ...prev,
+      [complaintId]: prev[complaintId]
+        ? [...prev[complaintId], ...fileArray]
+        : fileArray,
+    }));
+  };
+
+  // Remove an image from preview before upload
+  const handleRemoveImage = (complaintId, index) => {
+    setImages((prev) => {
+      const updated = [...(prev[complaintId] || [])];
+      updated.splice(index, 1);
+      return { ...prev, [complaintId]: updated };
+    });
+  };
+
+  // Submit images for a complaint
+  const handleSubmitImages = async (complaintId) => {
+    if (!images[complaintId] || images[complaintId].length === 0) {
+      alert("Please select at least one image before submitting.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("complaintId", complaintId); // Add complaintId to the form data
+    images[complaintId].forEach((file) => formData.append("images", file));
+
+    try {
+      setUploading(true);
+      const response = await axios.post(
+        `http://localhost:5000/api/workers/submit-images-complaint`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      alert("Images uploaded successfully!");
+      setImages((prev) => ({ ...prev, [complaintId]: [] })); // reset after upload
+      console.log("Upload response:", response.data);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to upload images.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="worker-dashboard">
@@ -88,6 +143,44 @@ const WorkerDashboard = () => {
                   <strong>Status:</strong>{" "}
                   <span className={`status ${c.status.toLowerCase()}`}>{c.status}</span>
                 </p>
+
+                {/* Image Upload Section */}
+                <div className="upload-section">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleImageChange(c._id, e.target.files)}
+                  />
+
+                  {/* Image Previews */}
+                  {images[c._id]?.length > 0 && (
+                    <div className="image-preview">
+                      {images[c._id].map((img, idx) => (
+                        <div key={idx} className="preview-item">
+                          <img
+                            src={URL.createObjectURL(img)}
+                            alt={`preview-${idx}`}
+                            className="preview-img"
+                          />
+                          <button
+                            className="remove-btn"
+                            onClick={() => handleRemoveImage(c._id, idx)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={() => handleSubmitImages(c._id)}
+                    disabled={uploading}
+                  >
+                    {uploading ? "Uploading..." : "Submit Images"}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
