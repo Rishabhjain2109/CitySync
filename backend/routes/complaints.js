@@ -107,8 +107,17 @@ router.get('/headComplaints', auth, async (req, res) => {
 router.put('/update-complaint', auth, async (req, res) => {
   try {
     const { complaintId, status, workerIDs } = req.body;
-    const complaint = await Complaint.findByIdAndUpdate(complaintId, { status }, { new: true });
-    
+    const complaintBefore=await Complaint.findById(complaintId).populate('citizen');
+    if (!complaintBefore) return res.status(404).json({ message: 'Complaint not found' });
+    const oldStatus = complaintBefore.status;
+
+    //const complaint = await Complaint.findByIdAndUpdate(complaintId, { status, assignedWorkers: workerIDs }, { new: true });
+    const complaint = await Complaint.findByIdAndUpdate(
+      complaintId,
+      { status, assignedWorkers: workerIDs },
+      { new: true }
+    ).populate('citizen');
+
     console.log(workerIDs);
     
     if (status === "resolved" && Array.isArray(workerIDs) && workerIDs.length > 0) {
@@ -119,35 +128,25 @@ router.put('/update-complaint', auth, async (req, res) => {
 
       console.log("Workers updated:", updateResult.modifiedCount);
     }
-    const complaint1 = await Complaint.findById(complaintId).populate('citizen assignedWorkers');
-
-    if (!complaint1) {
-      return res.status(404).json({ message: 'Complaint not found' });
-    }
-
-    const oldStatus = complaint1.status; // save old status
-    complaint1.status = status;
-    complaint1.assignedWorkers = assignedWorkers || complaint1.assignedWorkers;
-
-    await complaint1.save();
 
     // 🔔 Send notifications if status changed
-    if (oldStatus !== status) {
-      const citizenEmail = complaint1.citizen.email;
-      const citizenPhone = complaint1.citizen.phone;
+      //const oldStatus = complaint.status === 'assigned' ? 'pending' : 'assigned';
+      if(oldStatus!=status){
+      const citizenEmail = complaint.citizen.email;
+      const citizenPhone = complaint.citizen.phone;
 
       // Example messages
-      const message = `Your complaint "${complaint1.description}" status changed from ${oldStatus} to ${status}.`;
+      const message = `Your complaint "${complaint.description}" status changed from ${oldStatus} to ${status}.`;
 
       // Send email
       sendEmail(citizenEmail, 'Complaint Status Update', message);
 
       // Send SMS
-      sendSMS(citizenPhone, message);
+       sendSMS(citizenPhone, message);
+      }
 
       // Optional: push notification
       // sendPush(complaint.citizen.deviceToken, message);
-    }
     res.json({ message: 'Complaint updated successfully', workerIDs });
   } catch (err) {
     console.error(err);
@@ -183,6 +182,33 @@ router.get('/allocated-workers', auth, async (req, res) => {
     
     const allocatedWorkers = await User.find({ _id: { $in: workerIdsArray } });
     res.json({ allocatedWorkers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get platform-wide complaint statistics
+router.get('/platform-stats', auth, async (req, res) => {
+  try {
+    const user = req.user;
+    
+    if (user.userType !== 'citizen') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Get ALL complaints on the platform
+    const allComplaints = await Complaint.find({});
+    
+    // Count complaints by status
+    const stats = {
+      total: allComplaints.length,
+      pending: allComplaints.filter(c => c.status === 'pending').length,
+      assigned: allComplaints.filter(c => c.status === 'assigned').length,
+      resolved: allComplaints.filter(c => c.status === 'resolved').length
+    };
+
+    res.json({ stats });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
