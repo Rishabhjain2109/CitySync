@@ -215,4 +215,26 @@ router.get('/platform-stats', auth, async (req, res) => {
   }
 });
 
+router.get('/complaint-submitted-image', auth, async (req, res) => {
+  try {
+    const { status, id } = req.query; 
+
+    if (!id || !status) {
+      return res.status(400).json({ message: "Missing required parameters (id or status)." });
+    }
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ message: "Complaint not found." });
+    }
+
+    const imageArr = status === 'pending' ? complaint.images : complaint.submittedImages;
+
+    res.status(200).json(imageArr);
+  } catch (error) {
+    console.error("Error fetching complaint images:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 module.exports = router;

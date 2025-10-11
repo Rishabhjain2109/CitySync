@@ -5,24 +5,23 @@ import axios from "axios";
 const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedWorkers, setSelectedWorkers] = useState([]);
+  const [showImages, setShowImages] = useState(false);
+  const [submittedImages, setSubmittedImages] = useState([]);
   const token = localStorage.getItem("token");
 
-  // Calculate SLA breach (48 hours = 172800000 ms)
+  // ✅ Check SLA breach (48 hours = 172800000 ms)
   const isSLABreached =
     complaint.status !== "resolved" &&
     Date.now() - new Date(complaint.createdAt).getTime() > 48 * 60 * 60 * 1000;
 
-  const handleOpenModal = () => {
-    console.log(selectedWorkers);
-    setShowModal(true);
-  };
-
+  // 🔹 Open and close modals
+  const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => {
     setSelectedWorkers([]);
     setShowModal(false);
   };
 
-  // Toggle worker selection
+  // 🔹 Worker selection toggle
   const handleSelectWorker = (workerId) => {
     setSelectedWorkers((prev) =>
       prev.includes(workerId)
@@ -31,7 +30,7 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
     );
   };
 
-  // Allocate selected workers
+  // 🔹 Allocate selected workers
   const handleAllocateWorkers = async () => {
     if (!token) {
       alert("You are not authenticated. Please log in again.");
@@ -50,9 +49,7 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
           status: "busy",
           allocatedComplaint: complaint._id,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       await axios.put(
@@ -62,9 +59,7 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
           status: "assigned",
           workerIDs: selectedWorkers,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setWorkers(updated);
@@ -76,7 +71,25 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
     }
   };
 
-  // Filter only available workers
+  // 🔹 Fetch submitted images from backend
+  const handleShowImages = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/complaints/complaint-submitted-image",
+        {
+          params: { status: complaint.status, id: complaint._id },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setSubmittedImages(response.data);
+      setShowImages(true);
+    } catch (error) {
+      console.error("Error fetching submitted images:", error);
+      alert("Failed to load submitted images.");
+    }
+  };
+
   const availableWorkers = workers.filter((w) => w.status === "active");
 
   return (
@@ -85,8 +98,6 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
       <div className={`complaint-card ${isSLABreached ? "sla-breached" : ""}`}>
         <div className="complaint-header">
           <h3>{complaint.title || "Complaint"}</h3>
-
-          {/* SLA Breach Badge (only if not resolved) */}
           {isSLABreached && <span className="sla-badge">⚠️ SLA Breached</span>}
         </div>
 
@@ -106,19 +117,24 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
           <strong>Date:</strong> {complaint.createdAt.split("T")[0]}
         </p>
 
-        {complaint.status === "pending" && (
-          <button className="allot-btn" onClick={handleOpenModal}>
-            Allot Workers
+        <div className="button-group">
+          {complaint.status === "pending" && (
+            <button className="allot-btn" onClick={handleOpenModal}>
+              Allot Workers
+            </button>
+          )}
+
+          <button className="show-images-btn" onClick={handleShowImages}>
+            Show Submitted Images
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Floating Modal */}
+      {/* Worker Allocation Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Available Workers</h3>
-
             {availableWorkers.length > 0 ? (
               <ul className="worker-list">
                 {availableWorkers.map((w) => (
@@ -155,6 +171,37 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Submitted Images Modal */}
+      {showImages && (
+        <div className="modal-overlay" onClick={() => setShowImages(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Submitted Images</h3>
+
+            {submittedImages.length > 0 ? (
+              <div className="image-gallery">
+                {submittedImages.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Submitted ${index}`}
+                    className="submitted-image"
+                  />
+                ))}
+              </div>
+            ) : (
+              <p>No images available.</p>
+            )}
+
+            <button
+              className="close-btn"
+              onClick={() => setShowImages(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
