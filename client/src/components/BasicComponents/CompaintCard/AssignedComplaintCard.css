@@ -102,3 +102,20 @@
   border-radius: 10px;
   border: 2px solid #ccc;
 }
+
+/* SLA Highlight Styles */
+.sla-breached {
+  border: 2px solid #e63946;
+  background-color: #ffe5e5;
+  transition: all 0.3s ease;
+}
+
+.sla-overdue-text {
+  color: #e63946;
+  font-weight: bold;
+}
+
+.sla-ok-text {
+  color: #2a9d8f;
+  font-weight: bold;
+}

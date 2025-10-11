@@ -6,7 +6,6 @@ const AssignedComplaintCard = ({ complaint }) => {
   const [showWorkers, setShowWorkers] = useState(false);
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const [showImages, setShowImages] = useState(false);
   const [images, setImages] = useState([]);
   const [resolving, setResolving] = useState(false);
@@ -17,7 +16,6 @@ const AssignedComplaintCard = ({ complaint }) => {
   const fetchAllocatedWorkers = async () => {
     try {
       setLoading(true);
-
       if (!complaint.assignedWorkers || complaint.assignedWorkers.length === 0) {
         setWorkers([]);
         setShowWorkers(true);
@@ -33,7 +31,6 @@ const AssignedComplaintCard = ({ complaint }) => {
       );
 
       setWorkers(res.data.allocatedWorkers);
-      // setShowWorkers(true);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch allocated workers");
@@ -42,17 +39,15 @@ const AssignedComplaintCard = ({ complaint }) => {
     }
   };
 
-  // Toggle worker visibility
   const toggleWorkers = () => {
     if (!showWorkers) {
-      // fetchAllocatedWorkers();
       setShowWorkers(true);
     } else {
       setShowWorkers(false);
     }
   };
 
-  // Fetch submitted images for this complaint
+  // Fetch submitted images
   const fetchSubmittedImages = async () => {
     try {
       setLoading(true);
@@ -63,7 +58,6 @@ const AssignedComplaintCard = ({ complaint }) => {
         }
       );
       setImages(res.data.images || []);
-      
     } catch (err) {
       console.error(err);
       alert("Failed to fetch submitted images");
@@ -72,11 +66,10 @@ const AssignedComplaintCard = ({ complaint }) => {
     }
   };
 
-  // Toggle image visibility
   const toggleImages = () => {
     if (!showImages) {
       fetchSubmittedImages();
-      // setShowImages(true);
+      setShowImages(true);
     } else {
       setShowImages(false);
     }
@@ -87,27 +80,24 @@ const AssignedComplaintCard = ({ complaint }) => {
     const confirm = window.confirm("Are you sure you want to mark this complaint as resolved?");
     if (!confirm) return;
 
-    // fetchAllocatedWorkers();
-    const workersID = workers.map(worker => worker._id);
-    console.log(workersID);
-    
+    const workersID = workers.map((worker) => worker._id);
+
     try {
       setResolving(true);
       const res = await axios.put(
-        'http://localhost:5000/api/complaints/update-complaint',
+        "http://localhost:5000/api/complaints/update-complaint",
         {
           complaintId: complaint._id,
-          status: 'resolved',
-          workerIDs: workersID
+          status: "resolved",
+          workerIDs: workersID,
         },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // console.log(res.data.workerIDs);
-      
+
       alert(res.data.message || "Complaint marked as resolved!");
-      window.location.reload(); // reload to update status visually
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Failed to mark as resolved.");
@@ -119,20 +109,42 @@ const AssignedComplaintCard = ({ complaint }) => {
   useEffect(() => {
     fetchAllocatedWorkers();
   }, []);
-  
 
   return (
-    <div className="assigned-complaint-card">
+    <div
+      className={`assigned-complaint-card ${
+        complaint.isOverdue ? "sla-breached" : ""
+      }`}
+    >
       <div className="complaint-header">
         <h3>{complaint.title}</h3>
-        <p><strong>Status:</strong> {complaint.status}</p>
+        <p>
+          <strong>Status:</strong> {complaint.status}
+        </p>
       </div>
 
-      <p><strong>Description:</strong> {complaint.description}</p>
-      <p><strong>Category:</strong> {complaint.category}</p>
-      <p><strong>Date:</strong> {new Date(complaint.createdAt).toLocaleDateString()}</p>
+      <p>
+        <strong>Description:</strong> {complaint.description}
+      </p>
+      <p>
+        <strong>Category:</strong> {complaint.category}
+      </p>
+      <p>
+        <strong>Date:</strong>{" "}
+        {new Date(complaint.createdAt).toLocaleDateString()}
+      </p>
 
-      {/* Buttons Section */}
+      {/* SLA Information */}
+      <p>
+        <strong>SLA:</strong>{" "}
+        {complaint.isOverdue ? (
+          <span className="sla-overdue-text">⚠️ SLA Breached</span>
+        ) : (
+          <span className="sla-ok-text">{complaint.timeRemaining}</span>
+        )}
+      </p>
+
+      {/* Buttons */}
       <div className="buttons-row">
         <button className="toggle-btn" onClick={toggleWorkers}>
           {showWorkers ? "Hide Allocated Workers" : "See Allocated Workers"}
@@ -145,7 +157,7 @@ const AssignedComplaintCard = ({ complaint }) => {
         <button
           className="resolve-btn"
           onClick={markResolved}
-          disabled={resolving || complaint.status === "Resolved"}
+          disabled={resolving || complaint.status === "resolved"}
         >
           {resolving
             ? "Marking..."
@@ -155,7 +167,7 @@ const AssignedComplaintCard = ({ complaint }) => {
         </button>
       </div>
 
-      {/* Allocated Workers */}
+      {/* Workers List */}
       {showWorkers && (
         <div className="workers-list">
           {loading ? (
@@ -163,9 +175,15 @@ const AssignedComplaintCard = ({ complaint }) => {
           ) : workers.length > 0 ? (
             workers.map((worker) => (
               <div key={worker._id} className="worker-item">
-                <p><strong>Name:</strong> {worker.name}</p>
-                <p><strong>Email:</strong> {worker.email}</p>
-                <p><strong>Status:</strong> {worker.status}</p>
+                <p>
+                  <strong>Name:</strong> {worker.name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {worker.email}
+                </p>
+                <p>
+                  <strong>Status:</strong> {worker.status}
+                </p>
               </div>
             ))
           ) : (
@@ -184,7 +202,7 @@ const AssignedComplaintCard = ({ complaint }) => {
               {images.map((img, idx) => (
                 <img
                   key={idx}
-                  src={`http://localhost:5000/${img}`} // adjust path if needed
+                  src={`http://localhost:5000/${img}`}
                   alt={`submitted-${idx}`}
                   className="submitted-img"
                 />
