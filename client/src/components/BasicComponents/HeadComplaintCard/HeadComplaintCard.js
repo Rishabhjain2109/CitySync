@@ -9,6 +9,7 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
 
   // Calculate SLA breach (48 hours = 172800000 ms)
   const isSLABreached =
+    complaint.status !== "resolved" &&
     Date.now() - new Date(complaint.createdAt).getTime() > 48 * 60 * 60 * 1000;
 
   const handleOpenModal = () => {
@@ -30,7 +31,7 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
     );
   };
 
-  // Allocate selected workers (change availability to false)
+  // Allocate selected workers
   const handleAllocateWorkers = async () => {
     if (!token) {
       alert("You are not authenticated. Please log in again.");
@@ -59,7 +60,7 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
         {
           complaintId: complaint._id,
           status: "assigned",
-          assignedWorkers: selectedWorkers,
+          workerIDs: selectedWorkers,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -85,10 +86,8 @@ const HeadComplaintCard = ({ complaint, workers, setWorkers }) => {
         <div className="complaint-header">
           <h3>{complaint.title || "Complaint"}</h3>
 
-          {/* SLA Breach Badge */}
-          {isSLABreached && (
-            <span className="sla-badge">⚠️ SLA Breached</span>
-          )}
+          {/* SLA Breach Badge (only if not resolved) */}
+          {isSLABreached && <span className="sla-badge">⚠️ SLA Breached</span>}
         </div>
 
         <p>
