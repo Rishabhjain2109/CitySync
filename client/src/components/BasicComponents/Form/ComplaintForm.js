@@ -44,7 +44,7 @@ const ComplaintForm = () => {
   // 🧭 Reverse Geocoding using Google Maps API
   const getAddressFromCoords = async (lat, lng) => {
     try {
-      const API_KEY = "AIzaSyBkGY96ZhFtZ-1e6RV_ePXkXgVT9bd9IAg"; // 🔒 Replace with your real key
+      const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`
       );
