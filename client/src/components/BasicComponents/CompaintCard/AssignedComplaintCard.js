@@ -39,25 +39,24 @@ const AssignedComplaintCard = ({ complaint }) => {
     }
   };
 
-  const toggleWorkers = () => {
-    if (!showWorkers) {
-      setShowWorkers(true);
-    } else {
-      setShowWorkers(false);
-    }
-  };
+  const toggleWorkers = () => setShowWorkers((prev) => !prev);
 
-  // Fetch submitted images
+  // ✅ Fetch submitted or pending images
   const fetchSubmittedImages = async () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        `http://localhost:5000/api/complaints/${complaint._id}/completion-images`,
+        "http://localhost:5000/api/complaints/complaint-submitted-image",
         {
           headers: { Authorization: `Bearer ${token}` },
+          params: {
+            id: complaint._id,
+            status: complaint.status, // either 'pending' or 'assigned' or 'resolved'
+          },
         }
       );
-      setImages(res.data.images || []);
+
+      setImages(res.data || []);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch submitted images");
@@ -77,7 +76,9 @@ const AssignedComplaintCard = ({ complaint }) => {
 
   // Mark complaint as resolved
   const markResolved = async () => {
-    const confirm = window.confirm("Are you sure you want to mark this complaint as resolved?");
+    const confirm = window.confirm(
+      "Are you sure you want to mark this complaint as resolved?"
+    );
     if (!confirm) return;
 
     const workersID = workers.map((worker) => worker._id);
@@ -202,7 +203,7 @@ const AssignedComplaintCard = ({ complaint }) => {
               {images.map((img, idx) => (
                 <img
                   key={idx}
-                  src={`http://localhost:5000/${img}`}
+                  src={img}
                   alt={`submitted-${idx}`}
                   className="submitted-img"
                 />
