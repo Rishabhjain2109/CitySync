@@ -5,8 +5,8 @@ const auth = require('../middleware/adminAuth');
 const Complaint = require('../models/Complaint');
 
 // Fixed admin credentials
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@citysync.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 // Admin login route
 router.post('/login', (req, res) => {
