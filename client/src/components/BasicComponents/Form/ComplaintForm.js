@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./ComplaintForm.css";
 import axios from "axios";
+import Button from "../Button/Button";
+// import dote
 
 const ComplaintForm = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ const ComplaintForm = () => {
   });
   const [imagePreviews, setImagePreviews] = useState([]);
   const [loadingAddress, setLoadingAddress] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   // 🌍 Get location when component mounts
   useEffect(() => {
@@ -86,6 +89,7 @@ const ComplaintForm = () => {
   };
 
   const handleSubmit = async (e) => {
+    setSubmitLoading(true);
     e.preventDefault();
 
     const data = new FormData();
@@ -114,6 +118,8 @@ const ComplaintForm = () => {
       console.error("Error submitting complaint:", error);
       alert("Error submitting complaint.");
     }
+
+    setSubmitLoading(false);
   };
 
   return (
@@ -205,9 +211,9 @@ const ComplaintForm = () => {
           />
         </div>
 
-        <button type="submit" className="submit-btn">
-          Submit
-        </button>
+        <Button disabled={submitLoading} type="submit" className="submit-btn">
+          {!submitLoading ? "Submit" : "Submitting"}
+        </Button>
       </form>
     </div>
   );
