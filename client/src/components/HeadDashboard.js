@@ -18,7 +18,7 @@ const HeadDashboard = () => {
   const [complaintFilter, setComplaintFilter] = useState("pending");
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("");
+  const [filterType, setFilterType] = useState("pending");
   const [filterArea, setFilterArea] = useState("");
   const [filterUrgency, setFilterUrgency] = useState("");
   const [filterDate, setFilterDate] = useState("");
@@ -78,13 +78,24 @@ const HeadDashboard = () => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/complaints/headComplaints",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        setLoading(true);
+
+        const res = await axios.get("http://localhost:5000/api/complaints/headComplaints", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            search: searchQuery,
+            date: filterDate,
+            type: filterType,
+            area: filterArea,
+            urgency: filterUrgency,
+          },
+        });
+
         setComplaints(res.data.complaints);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -99,28 +110,9 @@ const HeadDashboard = () => {
         console.error(err);
       }
     };
-
-    fetchWorkers();
-    fetchComplaints();
-  }, [token]);
-  
-  const filteredComplaints = sortComplaintsBySLA(
-    complaints
-      .filter((c) => c.status === complaintFilter)
-      .filter((c) =>
-        [c.type, c.area, c.description]
-          .some((field) => field?.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-      .filter((c) => (filterType ? c.type === filterType : true))
-      .filter((c) => (filterArea ? c.area === filterArea : true))
-      .filter((c) => (filterUrgency ? c.urgency === filterUrgency : true))
-      .filter((c) =>
-        filterDate
-          ? new Date(c.createdAt).toDateString() === new Date(filterDate).toDateString()
-          : true
-      )
-  );
-
+    if (token) fetchComplaints();
+    if (token) fetchWorkers();
+  }, [token, filterType]);
 
   return (
     <div className="dashboard-container">
@@ -145,19 +137,19 @@ const HeadDashboard = () => {
           <div className="complaints-section">
             <div className="complaint-filter">
               <Button
-                onClick={() => setComplaintFilter("pending")}
+                onClick={() => setFilterType("pending")}
                 className={complaintFilter === "pending" ? "active" : ""}
               >
                 Pending
               </Button>
               <Button
-                onClick={() => setComplaintFilter("assigned")}
+                onClick={() => setFilterType("assigned")}
                 className={complaintFilter === "assigned" ? "active" : ""}
               >
                 Assigned
               </Button>
               <Button
-                onClick={() => setComplaintFilter("resolved")}
+                onClick={() => setFilterType("resolved")}
                 className={complaintFilter === "resolved" ? "active" : ""}
               >
                 Resolved
@@ -167,7 +159,7 @@ const HeadDashboard = () => {
             <h2>
               {complaintFilter.charAt(0).toUpperCase() +
                 complaintFilter.slice(1)}{" "}
-              Complaints ({filteredComplaints.length})
+              Complaints ({complaints.length})
             </h2>
 
             <ComplaintSearchFilter
@@ -185,10 +177,10 @@ const HeadDashboard = () => {
             />
 
 
-            {filteredComplaints.length === 0 ? (
+            {complaints.length === 0 ? (
               <p>No {complaintFilter} complaints found.</p>
             ) :  (
-              filteredComplaints.map((c) =>
+              complaints.map((c) =>
                 complaintFilter === "assigned" ? (
                   <AssignedComplaintCard key={c._id} complaint={c} />
                 ) : (

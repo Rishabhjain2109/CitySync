@@ -95,14 +95,47 @@ router.post('/userSubmit', auth, upload.array('images'), async (req, res) => {
 router.get('/headComplaints', auth, async (req, res) => {
   try {
     const head = req.user;
-    console.log(head);
-    const complaints = await Complaint.find({ department: head.department });
+    const { date, search, type } = req.query; // get filters from query params
+    console.log(req.query);
+    
+
+    // Base filter: department of the logged-in head
+    const filter = { department: head.department };
+
+    // Date filter (assuming Complaint schema has a `createdAt` field)
+    if (date) {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    // Search filter
+    if (search && search.trim() !== "") {
+      const searchRegex = new RegExp(search, "i"); // case-insensitive
+      filter.$or = [
+        { description: searchRegex },
+        { location: searchRegex },
+        { status: searchRegex },
+      ];
+    }
+    filter.status = type;
+
+    // Fetch complaints
+    const complaints = await Complaint.find(filter).sort({ createdAt: -1 });
+
+    // console.log(complaints);
+    
     res.json({ complaints });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
+
 
 router.put('/update-complaint', auth, async (req, res) => {
   try {
