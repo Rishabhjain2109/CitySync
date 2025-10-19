@@ -7,6 +7,7 @@ import HeadComplaintCard from './BasicComponents/HeadComplaintCard/HeadComplaint
 import WorkerCard from './BasicComponents/WorkerCard/WorkerCard';
 import AssignedComplaintCard from './BasicComponents/CompaintCard/AssignedComplaintCard'; // 👈 import
 import { checkSLA, getTimeRemaining, sortComplaintsBySLA } from "../utils/slaUtils";
+import SidebarPage from './BasicComponents/Sidebar/SidebarPage';
 
 
 const HeadDashboard = () => {
@@ -38,8 +39,6 @@ const HeadDashboard = () => {
     setShowComplaints(true);
     setShowWorkers(false);
   };
-
-  
 
   const fetchAllocatedWorkers = async () => {
     try {
@@ -75,6 +74,11 @@ const HeadDashboard = () => {
     }
   };
 
+  const buttonArr = [
+    { text: "View Complaints", func: handleViewComplaints },
+    { text: "View Allocated Workers", func: fetchAllocatedWorkers },
+  ];
+  
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
@@ -117,14 +121,16 @@ const HeadDashboard = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <div className="sidebar">
-        <Button onClick={handleViewComplaints} className="sidebar-btn">
+      {/* <div className="sidebar">
+        <Button onClick={handleViewComplaints} >
           View Complaints
         </Button>
-        <Button onClick={fetchAllocatedWorkers} className="sidebar-btn">
+        <Button onClick={fetchAllocatedWorkers} >
           View Allocated Workers
         </Button>
-      </div>
+      </div> */}
+
+      <SidebarPage buttons={buttonArr}/>
 
       {/* Main Content */}
       <div className="main-content">

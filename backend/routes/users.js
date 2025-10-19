@@ -95,7 +95,9 @@ router.get('/assigned-complaints', auth, async (req, res) => {
     if (ids.length === 0) {
       return res.json({ complaints: [] });
     }
-    const complaints = await Complaint.find({ _id: { $in: ids } });
+    const complaints = await Complaint.find({ _id: { $in: ids } })
+    .sort({ createdAt: -1 });;
+
     return res.json({ complaints });
   } catch (error) {
     console.error('Get assigned complaints error:', error);

@@ -1,7 +1,7 @@
 /* Layout container */
-.dashboard-container {
+.dashboard-container {  
   display: flex;
-  height: 100vh;
+  min-height: 91.1vh;
   background-color: #f7f7f7;
   font-family: Arial, sans-serif;
 }
@@ -9,26 +9,19 @@
 /* Sidebar */
 .sidebar {
   width: 220px;
+  height: 91.1vh;
+  position: fixed;
   background-color: #2c3e50;
   color: #ecf0f1;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 2vh;
 }
 
 .sidebar h2 {
   margin-bottom: 20px;
-}
-
-.sidebar-btn {
-  background-color: #1abc9c !important;
-  color: #fff !important;
-  padding: 10px 15px !important;
-  border: none !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-  width: 100% !important;
 }
 
 /* Main content */
@@ -39,23 +32,20 @@
   flex-direction: column;
   align-items: center;
   overflow-y: auto;
+  margin-left: 13vw;
 }
 
 .main-content h1 {
   margin-bottom: 20px;
+  /* display: flex; */
+  /* flex-direction: column;
+  justify-content: center;
+  align-items: center; */
 }
 
-/* Complaint card */
-.complaint-card {
-  width: 60%;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  margin: 10px 0;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.complaint-card p {
-  margin: 5px 0;
+.complaints-section{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

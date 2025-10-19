@@ -67,8 +67,7 @@ const Header = () => {
         </nav>
 
         <div className="search-container">
-          <input type="text" placeholder="Search..." className="search-input" />
-          <FiSearch className="search-icon" />
+          
           <Button onClick={handleAuthClick}>
             {isLoggedIn ? "Logout" : "Login"}
           </Button>

@@ -207,7 +207,7 @@ const ComplaintForm = () => {
             name="address"
             placeholder="Fetching your location..."
             value={formData.address}
-            readOnly
+            
           />
         </div>
 
