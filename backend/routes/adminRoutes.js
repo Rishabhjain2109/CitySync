@@ -3,6 +3,17 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/adminAuth');
 const Complaint = require('../models/Complaint');
+const Application = require('../models/Application');
+const multer = require('multer');
+const cloudinary = require('../config/cloudinary');
+const upload = multer({
+  dest: 'uploads/',
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB per file
+    files: 5 // max 5 files
+  }
+});
+
 
 // Fixed admin credentials
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
@@ -46,5 +57,53 @@ router.get('/complaints', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+router.post("/submit-applications", upload.fields([{ name: "applicationImage", maxCount: 1 },{ name: "govtId", maxCount: 1 },]), async (req, res) => {
+    try {
+      const { name, department, mobileNumber, email } = req.body;
+      const files = req.files;
+
+      console.log("hello");
+      
+
+      if (!files || !files.applicationImage || !files.govtId || !name || !department || (!mobileNumber && !email)) {
+        return res.status(400).json({ message: "All required fields must be filled." });
+      }
+
+      // Helper to upload buffer to Cloudinary
+      const uploadToCloudinary = (fileBuffer, folder) =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream({ folder }, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          });
+          stream.end(fileBuffer);
+        });
+
+      // Upload both files
+      const applicationImageResult = await uploadToCloudinary(files.applicationImage[0].buffer, "applications");
+      const govtIdResult = await uploadToCloudinary(files.govtId[0].buffer, "applications");
+
+      // Create new application
+      const application = new Application({
+        name,
+        department,
+        mobileNumber,
+        email,
+        applicationImageUrl: applicationImageResult.secure_url,
+        govtIdUrl: govtIdResult.secure_url,
+        submittedBy: req.user._id, // optional: if you track who submitted
+      });
+
+
+      await application.save();
+
+      res.status(200).json({ message: "Application submitted successfully", application });
+    } catch (error) {
+      console.error("Error in /submit-applications:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
 
 module.exports = router;

@@ -10,6 +10,7 @@ import ComplaintHeatmap from './components/ComplaintHeatmap';
 import './App.css';
 import Header from './components/Header';
 import 'leaflet/dist/leaflet.css';
+import ApplicationForm from './components/ApplicationForm';
 
 const theme = createTheme({
   palette: {
@@ -46,8 +47,8 @@ function App() {
             />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={ localStorage.getItem('adminToken') ? <AdminDashboard /> : <Navigate to="/admin/login" />} />
-            <Route path="/admin/heatmap" element={<ComplaintHeatmap />} />
-
+            <Route path="/admin/heatmap" element={ localStorage.getItem('adminToken') ? <ComplaintHeatmap /> : <Navigate to="/admin/login" />} />
+            <Route path="/apply" element={<ApplicationForm/>}/>
           </Routes>
         </div>
       </Router>

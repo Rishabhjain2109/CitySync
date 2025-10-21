@@ -23,7 +23,7 @@ const Dashboard = () => {
     }
     
   return (
-    <div style={{marginTop: '8.9vh'}}>
+    <div style={{}}>
         {user.userType === 'citizen' && <CitizenDashboard/>}
         {user.userType === 'departmentHead' && <HeadDashboard/>}
         {user.userType === 'worker' && <WorkerDashboard/>}

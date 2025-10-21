@@ -1,0 +1,99 @@
+/* Container */
+.application-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f3f4f6; /* light gray */
+}
+
+/* Form Card */
+.application-form-card {
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 1.5rem; /* rounded-2xl */
+  padding: 2rem;
+  width: 100%;
+  max-width: 450px;
+  box-sizing: border-box;
+}
+
+/* Form Title */
+.application-form-card h2 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Form Fields */
+.application-form-card label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.application-form-card input[type="text"],
+.application-form-card input[type="email"],
+.application-form-card input[type="file"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.application-form-card input[type="text"]:focus,
+.application-form-card input[type="email"]:focus,
+.application-form-card input[type="file"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Error Messages */
+.application-form-card .error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Image Previews */
+.application-form-card img {
+  display: block;
+  margin: 0.5rem auto;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.application-form-card img.application-preview {
+  height: 160px;
+  width: auto;
+}
+
+.application-form-card img.govtId-preview {
+  height: 80px;
+  width: auto;
+}
+
+/* Submit Button */
+.application-form-card button[type="submit"] {
+  width: 100%;
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.application-form-card button[type="submit"]:hover {
+  background-color: #2563eb;
+}
