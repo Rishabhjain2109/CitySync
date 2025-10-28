@@ -7,7 +7,7 @@ const Application = require('../models/Application');
 const multer = require('multer');
 const cloudinary = require('../config/cloudinary');
 const upload = multer({
-  dest: 'uploads/',
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB per file
     files: 5 // max 5 files
@@ -92,7 +92,7 @@ router.post("/submit-applications", upload.fields([{ name: "applicationImage", m
         email,
         applicationImageUrl: applicationImageResult.secure_url,
         govtIdUrl: govtIdResult.secure_url,
-        submittedBy: req.user._id, // optional: if you track who submitted
+        // submittedBy: req.user._id, // removed since no auth middleware
       });
 
 
