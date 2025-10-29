@@ -122,9 +122,25 @@ const ApplicationForm = () => {
 
         {/* Department */}
         <div>
-          <label>Department</label>
-          <input type="text" name="department" value={formik.values.department} onChange={formik.handleChange} onBlur={formik.handleBlur} />
-          {formik.touched.department && formik.errors.department && <p className="error">{formik.errors.department}</p>}
+          <label htmlFor="department">Department</label>
+          <select
+            id="department"
+            name="department"
+            value={formik.values.department}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+          >
+            <option value="">-- Select Department --</option>
+            <option value="sewage">Sewage</option>
+            <option value="garbage">Garbage</option>
+            <option value="road">Road</option>
+            <option value="water">Water</option>
+            <option value="electricity">Electricity</option>
+          </select>
+
+          {formik.touched.department && formik.errors.department && (
+            <p className="error">{formik.errors.department}</p>
+          )}
         </div>
 
         {/* Mobile Number */}

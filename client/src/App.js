@@ -11,6 +11,9 @@ import './App.css';
 import Header from './components/Header';
 import 'leaflet/dist/leaflet.css';
 import ApplicationForm from './components/ApplicationForm';
+import ApplicationList from './components/ApplicationList';
+import ApplicationDetails from './components/ApplicationDetails';
+import { ToastContainer } from "react-toastify";
 
 const theme = createTheme({
   palette: {
@@ -49,7 +52,18 @@ function App() {
             <Route path="/admin/dashboard" element={ localStorage.getItem('adminToken') ? <AdminDashboard /> : <Navigate to="/admin/login" />} />
             <Route path="/admin/heatmap" element={ localStorage.getItem('adminToken') ? <ComplaintHeatmap /> : <Navigate to="/admin/login" />} />
             <Route path="/apply" element={<ApplicationForm/>}/>
+            <Route path='/admin/applications' element={<ApplicationList/>}/>
+            <Route path='/application/:id' element={<ApplicationDetails/>}/>
           </Routes>
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnHover
+            theme="colored"
+          />
         </div>
       </Router>
     </ThemeProvider>

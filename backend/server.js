@@ -22,6 +22,7 @@ app.use('/api/complaints', require('./routes/complaints'));
 app.use('/api/heads', require('./routes/heads'));
 app.use('/api/workers', require('./routes/workerRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/application', require('./routes/application'));
 
 
 // Serve static assets in production

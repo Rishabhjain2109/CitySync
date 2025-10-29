@@ -95,6 +95,7 @@ const AdminDashboard = () => {
     Download Monthly CSV
   </button>
   <button onClick={() => navigate('/admin/heatmap')}>View Heatmap</button>
+  <button onClick={() => navigate('/admin/applications')}>See Application</button>
 
 </div>
 

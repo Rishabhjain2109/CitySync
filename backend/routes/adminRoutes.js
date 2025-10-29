@@ -13,6 +13,7 @@ const upload = multer({
     files: 5 // max 5 files
   }
 });
+const jwt = require('jsonwebtoken');
 
 
 // Fixed admin credentials
@@ -25,7 +26,7 @@ router.post('/login', (req, res) => {
 
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
     // simple JWT for admin
-    const jwt = require('jsonwebtoken');
+    
     const token = jwt.sign({ isAdmin: true }, process.env.JWT_SECRET, { expiresIn: '1d' });
     return res.json({ token });
   } else {
@@ -105,5 +106,43 @@ router.post("/submit-applications", upload.fields([{ name: "applicationImage", m
     }
   }
 );
+
+router.get("/get-applications", async (req, res) => {
+  try {
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decoded.isAdmin) {
+      return res.status(403).json({ message: "Access denied. Admin only." });
+    }
+
+    // ✅ Pagination setup
+    const page = parseInt(req.query.page) || 1; // default page 1
+    const limit = parseInt(req.query.limit) || 10; // default 10 items per page
+    const skip = (page - 1) * limit;
+
+    // ✅ Fetch paginated data
+    const [applications, total] = await Promise.all([
+      Application.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Application.countDocuments(),
+    ]);
+
+    console.log(applications);
+    
+    res.json({
+      applications,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalApplications: total,
+    });
+  } catch (error) {
+    console.error("Admin application error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 module.exports = router;
